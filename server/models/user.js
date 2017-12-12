@@ -23,12 +23,12 @@ const UserSchema = new mongoose.Schema({
 UserSchema.statics.emailExists = async function (email) {
   const User = this;
 
-  let user = await User.findOne({ email });
+  const user = await User.findOne({ email });
   if (user) {
     return Promise.reject;
-  } else {
-    return Promise.resolve;
   }
+
+  return Promise.resolve;
 };
 
 const User = mongoose.model('User', UserSchema);
