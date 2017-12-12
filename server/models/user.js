@@ -10,26 +10,26 @@ const UserSchema = new mongoose.Schema({
     unique: true,
     validate: {
       validator: value => validator.isEmail(value),
-      message: '{VALUE} is not a valid email'  
-    }
+      message: '{VALUE} is not a valid email',
+    },
   },
   password: {
     type: String,
     required: true,
-    minlength: 6
-  }
+    minlength: 6,
+  },
 }, { usePushEach: true });
 
-// UserSchema.statics.emailExists = async function (email) {
-//   const User = this;
+UserSchema.statics.emailExists = async function (email) {
+  const User = this;
 
-//   let user = await User.findOne({ email });
-//   if (user) {
-//     return Promise.reject;
-//   } else {
-//     return Promise.resolve;
-//   }
-// };
+  let user = await User.findOne({ email });
+  if (user) {
+    return Promise.reject;
+  } else {
+    return Promise.resolve;
+  }
+};
 
 const User = mongoose.model('User', UserSchema);
 
