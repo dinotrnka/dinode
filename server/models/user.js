@@ -20,17 +20,6 @@ const UserSchema = new mongoose.Schema({
   },
 }, { usePushEach: true });
 
-UserSchema.statics.emailExists = async function (email) {
-  const User = this;
-
-  const user = await User.findOne({ email });
-  if (user) {
-    return Promise.reject;
-  }
-
-  return Promise.resolve;
-};
-
 const User = mongoose.model('User', UserSchema);
 
 module.exports = { User };
