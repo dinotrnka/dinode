@@ -1,6 +1,7 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const _ = require('lodash');
+const { check, validationResult } = require('express-validator/check');
 
 require('./db/mongoose');
 const { User } = require('./models/user');
@@ -14,37 +15,48 @@ app.listen(port, () => {
   console.log(`Started on port ${port}.`);
 });
 
-app.post('/register', async (req, res) => {
-  const body = _.pick(req.body, ['email', 'password']);
-  const user = new User(body);
-
+app.post('/register', [
+  check('email')
+    .trim()
+    .exists().withMessage('Email is required')
+    .isEmail().withMessage('Enter a valid email address')
+    .custom(email => User.findOne({ email: email.toLowerCase() }).then((user) => {
+      if (user) {
+        throw new Error(`User with email ${email} already exists`);
+      }
+      return Promise.resolve;
+    })),
+  check('password')
+    .exists().withMessage('Password is required')
+    .isLength({ min: 5 }).withMessage('Password must be at least 5 characters long'),
+], async (req, res) => {
   try {
-    const emailTaken = await User.findOne({ email: user.email });
-    if (emailTaken) {
-      throw new Error(`User with email ${user.email} already exists`);
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).send({ error: errors.array()[0].msg });
     }
+
+    const body = _.pick(req.body, ['email', 'password']);
+    const user = new User({
+      email: body.email.toLowerCase(),
+      password: body.password,
+    });
 
     await user.save();
     res.send(body);
   } catch (e) {
-    let errorMessage;
-
-    if (e.errors && e.errors.email && e.errors.email.message) {
-      errorMessage = e.errors.email.message;
-    } else if (e.errors && e.errors.password && e.errors.password.message) {
-      errorMessage = e.errors.password.message;
-    } else if (e.message) {
-      errorMessage = e.message;
-    } else {
-      errorMessage = 'Error while creating user';
-    }
-
-    // res.status(400).send(e);
-    res.status(400).send({ errorMessage });
+    console.log(e);
+    res.status(400).send({ errorMessage: 'Error while creating user' });
   }
 });
 
 app.post('/login', (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    console.log(errors);
+    return res.send({ errorMessage: errors.array()[0].msg });
+  }
+
   const body = _.pick(req.body, ['email', 'password']);
   res.send(body);
 });
