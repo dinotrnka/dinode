@@ -7,17 +7,17 @@ const { check, validationResult } = require('express-validator/check');
 
 require('./db/mongoose');
 const { User } = require('./models/user');
+const { Note } = require('./models/note');
 
 const app = express();
 const port = process.env.PORT;
-
 app.use(bodyParser.json());
 
 app.listen(port, () => {
   console.log(`Started on port ${port}.`);
 });
 
-app.post('/register', [
+app.post('/users/register', [
   check('email')
     .trim()
     .exists().withMessage('Email is required')
@@ -47,12 +47,11 @@ app.post('/register', [
     await user.save();
     res.send(body);
   } catch (e) {
-    console.log(e);
     res.status(400).send({ errorMessage: 'Error while creating user' });
   }
 });
 
-app.post('/login', (req, res) => {
+app.post('/users/login', (req, res) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     console.log(errors);
@@ -61,6 +60,25 @@ app.post('/login', (req, res) => {
 
   const body = _.pick(req.body, ['email', 'password']);
   res.send(body);
+});
+
+app.post('/notes', [
+  check('text').exists().withMessage('Text is required'),
+], async (req, res) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).send({ error: errors.array()[0].msg });
+    }
+
+    const body = _.pick(req.body, ['text']);
+    const note = new Note(body);
+
+    await note.save();
+    res.send(body);
+  } catch (e) {
+    res.status(400).send({ errorMessage: 'Error while creating note' });
+  }
 });
 
 module.exports = { app };

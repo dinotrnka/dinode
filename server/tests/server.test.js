@@ -4,17 +4,24 @@ const expect = require('expect');
 
 const { app } = require('./../server');
 const { User } = require('../models/user');
-const { seedUsers, populateUsers } = require('./seed/seed');
+const { Note } = require('../models/note');
+const {
+  seedUsers,
+  populateUsers,
+  seedNotes,
+  populateNotes,
+} = require('./seed/seed');
 
 beforeEach(populateUsers);
+beforeEach(populateNotes);
 
-describe('register/', () => {
+describe('users/register/', () => {
   it('should create a user with valid email and password', (done) => {
     const email = 'testuser@gmail.com';
     const password = 'password';
 
     request(app)
-      .post('/register')
+      .post('/users/register')
       .send({ email, password })
       .expect(200)
       .end((err) => {
@@ -35,7 +42,7 @@ describe('register/', () => {
     const password = 'password';
 
     request(app)
-      .post('/register')
+      .post('/users/register')
       .send({ email, password })
       .expect(200)
       .end((err) => {
@@ -55,7 +62,7 @@ describe('register/', () => {
     const password = 'password';
 
     request(app)
-      .post('/register')
+      .post('/users/register')
       .send({ email, password })
       .expect(200)
       .end((err) => {
@@ -70,12 +77,11 @@ describe('register/', () => {
       });
   });
 
-
   it('should not create a user with no email', (done) => {
     const password = 'password';
 
     request(app)
-      .post('/register')
+      .post('/users/register')
       .send({ password })
       .expect(400)
       .expect((res) => {
@@ -97,7 +103,7 @@ describe('register/', () => {
     const email = 'email@gmail.com';
 
     request(app)
-      .post('/register')
+      .post('/users/register')
       .send({ email })
       .expect(400)
       .expect((res) => {
@@ -120,7 +126,7 @@ describe('register/', () => {
     const password = 'somepass';
 
     request(app)
-      .post('/register')
+      .post('/users/register')
       .send({ email, password })
       .expect(400)
       .expect((res) => {
@@ -143,7 +149,7 @@ describe('register/', () => {
     const password = 'somepass';
 
     request(app)
-      .post('/register')
+      .post('/users/register')
       .send({ email, password })
       .expect(400)
       .expect((res) => {
@@ -167,7 +173,7 @@ describe('register/', () => {
     const password = 'wtf';
 
     request(app)
-      .post('/register')
+      .post('/users/register')
       .send({ email, password })
       .expect(400)
       .expect((res) => {
@@ -180,6 +186,47 @@ describe('register/', () => {
 
         User.find().then((users) => {
           expect(users.length).toBe(seedUsers.length);
+          done();
+        }).catch(e => done(e));
+      });
+  });
+});
+
+describe('notes', () => {
+  it('should create a note', (done) => {
+    const text = 'Hello there! How are you?';
+
+    request(app)
+      .post('/notes')
+      .send({ text })
+      .expect(200)
+      .end((err) => {
+        if (err) {
+          return done(err);
+        }
+
+        Note.find({ text }).then((notes) => {
+          expect(notes.length).toBe(1);
+          done();
+        }).catch(e => done(e));
+      });
+  });
+
+  it('should not create a note without text', (done) => {
+    request(app)
+      .post('/notes')
+      .send({})
+      .expect(400)
+      .expect((res) => {
+        expect(res.body.error).toBe('Text is required');
+      })
+      .end((err) => {
+        if (err) {
+          return done(err);
+        }
+
+        Note.find({}).then((notes) => {
+          expect(notes.length).toBe(seedNotes.length);
           done();
         }).catch(e => done(e));
       });
