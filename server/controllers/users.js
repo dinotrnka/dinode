@@ -6,7 +6,7 @@ const { User } = require('../models/user');
 
 const app = express();
 
-app.post('/register', [
+app.post('/', [
   check('email')
     .trim()
     .exists().withMessage('Email is required')

@@ -14,14 +14,15 @@ const {
 
 beforeEach(populateUsers);
 beforeEach(populateNotes);
+const apiPrefix = '/api/v1';
 
-describe('users/register/', () => {
+describe('/users', () => {
   it('should create a user with valid email and password', (done) => {
     const email = 'testuser@gmail.com';
     const password = 'password';
 
     request(app)
-      .post('/users/register')
+      .post(`${apiPrefix}/users`)
       .send({ email, password })
       .expect(200)
       .end((err) => {
@@ -42,7 +43,7 @@ describe('users/register/', () => {
     const password = 'password';
 
     request(app)
-      .post('/users/register')
+      .post(`${apiPrefix}/users`)
       .send({ email, password })
       .expect(200)
       .end((err) => {
@@ -62,7 +63,7 @@ describe('users/register/', () => {
     const password = 'password';
 
     request(app)
-      .post('/users/register')
+      .post(`${apiPrefix}/users`)
       .send({ email, password })
       .expect(200)
       .end((err) => {
@@ -81,7 +82,7 @@ describe('users/register/', () => {
     const password = 'password';
 
     request(app)
-      .post('/users/register')
+      .post(`${apiPrefix}/users`)
       .send({ password })
       .expect(400)
       .expect((res) => {
@@ -103,7 +104,7 @@ describe('users/register/', () => {
     const email = 'email@gmail.com';
 
     request(app)
-      .post('/users/register')
+      .post(`${apiPrefix}/users`)
       .send({ email })
       .expect(400)
       .expect((res) => {
@@ -126,7 +127,7 @@ describe('users/register/', () => {
     const password = 'somepass';
 
     request(app)
-      .post('/users/register')
+      .post(`${apiPrefix}/users`)
       .send({ email, password })
       .expect(400)
       .expect((res) => {
@@ -149,7 +150,7 @@ describe('users/register/', () => {
     const password = 'somepass';
 
     request(app)
-      .post('/users/register')
+      .post(`${apiPrefix}/users`)
       .send({ email, password })
       .expect(400)
       .expect((res) => {
@@ -173,7 +174,7 @@ describe('users/register/', () => {
     const password = 'wtf';
 
     request(app)
-      .post('/users/register')
+      .post(`${apiPrefix}/users`)
       .send({ email, password })
       .expect(400)
       .expect((res) => {
@@ -192,12 +193,12 @@ describe('users/register/', () => {
   });
 });
 
-describe('notes', () => {
+describe('/notes', () => {
   it('should create a note', (done) => {
     const text = 'Hello there! How are you?';
 
     request(app)
-      .post('/notes')
+      .post(`${apiPrefix}/notes`)
       .send({ text })
       .expect(200)
       .end((err) => {
@@ -214,7 +215,7 @@ describe('notes', () => {
 
   it('should not create a note without text', (done) => {
     request(app)
-      .post('/notes')
+      .post(`${apiPrefix}/notes`)
       .send({})
       .expect(400)
       .expect((res) => {

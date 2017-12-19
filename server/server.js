@@ -3,15 +3,12 @@ require('./db/mongoose');
 
 const express = require('express');
 const bodyParser = require('body-parser');
-
-const usersController = require('./controllers/users');
-const notesController = require('./controllers/notes');
+const routes = require('./controllers');
 
 const app = express();
 const port = process.env.PORT;
 app.use(bodyParser.json());
-app.use('/users', usersController);
-app.use('/notes', notesController);
+app.use('/api/v1', routes);
 app.listen(port, () => {
   console.log(`Started on port ${port}.`);
 });
