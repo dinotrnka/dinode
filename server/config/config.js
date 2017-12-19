@@ -1,6 +1,7 @@
-var env = process.env.NODE_ENV || 'development';
-var config = require('./config.json');
-var envConfig = config[env];
+const config = require('./config.json');
+
+const env = process.env.NODE_ENV || 'development';
+const envConfig = config[env];
 
 if (env === 'development' || env === 'test') {
   Object.keys(envConfig).forEach((key) => {
