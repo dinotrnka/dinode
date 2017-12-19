@@ -1,0 +1,10 @@
+{
+  "test" : {
+    "PORT": 3001,
+    "MONGODB_URI": "mongodb://localhost:27017/DinodeTest"
+  },
+  "development" : {
+    "PORT": 3001,
+    "MONGODB_URI": "mongodb://localhost:27017/Dinode"
+  }
+}
