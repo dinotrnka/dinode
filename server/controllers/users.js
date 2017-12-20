@@ -1,5 +1,6 @@
 const express = require('express');
 const _ = require('lodash');
+const jwt = require('jsonwebtoken');
 const { check, validationResult } = require('express-validator/check');
 
 const { User } = require('../models/user');
@@ -40,15 +41,25 @@ app.post('/', [
   }
 });
 
-app.post('/login', (req, res) => {
+app.post('/login', [
+
+], async (req, res) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
-    console.log(errors);
     return res.send({ errorMessage: errors.array()[0].msg });
   }
 
-  const body = _.pick(req.body, ['email', 'password']);
-  res.send(body);
+  try {
+    const body = _.pick(req.body, ['email', 'password']);
+    const user = await User.findByCredentials(body.email, body.password);
+
+    const token = await user.generateAuthToken();
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+    res.send({ access_token: token, expires: decoded.exp });
+  } catch (e) {
+    res.status(400).send({ errorMesage: 'Invalid credentials' });
+  }
 });
 
 module.exports = app;
