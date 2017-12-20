@@ -37,16 +37,21 @@ app.post('/', [
     await user.save();
     res.send(body);
   } catch (e) {
-    res.status(400).send({ errorMessage: 'Error while creating user' });
+    res.status(400).send({ error: 'Error while creating user' });
   }
 });
 
 app.post('/login', [
-
+  check('email')
+    .trim()
+    .exists().withMessage('Email is required'),
+  check('password')
+    .trim()
+    .exists().withMessage('Password is required'),
 ], async (req, res) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
-    return res.send({ errorMessage: errors.array()[0].msg });
+    return res.status(400).send({ error: errors.array()[0].msg });
   }
 
   try {
@@ -58,7 +63,8 @@ app.post('/login', [
 
     res.send({ access_token: token, expires: decoded.exp });
   } catch (e) {
-    res.status(400).send({ errorMesage: 'Invalid credentials' });
+    // res.status(400).send({ error: e.message });
+    res.status(400).send({ error: 'Invalid credentials' });
   }
 });
 

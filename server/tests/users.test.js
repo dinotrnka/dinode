@@ -188,3 +188,105 @@ describe('/users', () => {
       });
   });
 });
+
+describe('/users/login', () => {
+  it('should log in user with correct credentials and receive access token', (done) => {
+    const { _id, email, password } = seedUsers[0];
+
+    request(app)
+      .post(`${apiPrefix}/users/login`)
+      .send({ email, password })
+      .expect(200)
+      .expect((res) => {
+        expect(res.body).toHaveProperty('access_token');
+        expect(res.body).toHaveProperty('expires');
+      })
+      .end((err, res) => {
+        if (err) {
+          return done(err);
+        }
+
+        User.findById(_id).then((userInDB) => {
+          expect(userInDB.toObject().tokens[1])
+            .toBe(res.body.access_token);
+
+          done();
+        }).catch(e => done(e));
+      });
+  });
+
+  it('should not log in user with no email', (done) => {
+    const password = 'lubenica';
+
+    request(app)
+      .post(`${apiPrefix}/users/login`)
+      .send({ password })
+      .expect(400)
+      .expect((res) => {
+        expect(res.body.error).toBe('Email is required');
+      })
+      .end((err) => {
+        if (err) {
+          return done(err);
+        }
+        done();
+      });
+  });
+
+  it('should not log in user with no password', (done) => {
+    const email = 'karabaja@mora.dalje';
+
+    request(app)
+      .post(`${apiPrefix}/users/login`)
+      .send({ email })
+      .expect(400)
+      .expect((res) => {
+        expect(res.body.error).toBe('Password is required');
+      })
+      .end((err) => {
+        if (err) {
+          return done(err);
+        }
+        done();
+      });
+  });
+
+  it('should not log in user if email does not exist', (done) => {
+    const email = 'some@weird.mail';
+    const password = 'whatever';
+
+    request(app)
+      .post(`${apiPrefix}/users/login`)
+      .send({ email, password })
+      .expect(400)
+      .expect((res) => {
+        expect(res.body.error).toBe('Invalid credentials');
+      })
+      .end((err) => {
+        if (err) {
+          return done(err);
+        }
+        done();
+      });
+  });
+
+  it('should not log in user if password is incorrect', (done) => {
+    const { email } = seedUsers[0];
+    const password = 'obviouslywrongpassword';
+
+    request(app)
+      .post(`${apiPrefix}/users/login`)
+      .send({ email, password })
+      .expect(400)
+      .expect((res) => {
+        expect(res.body.error).toBe('Invalid credentials');
+      })
+      .end((err) => {
+        if (err) {
+          return done(err);
+        }
+
+        done();
+      });
+  });
+});
