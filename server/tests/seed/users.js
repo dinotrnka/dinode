@@ -7,11 +7,17 @@ const userOneId = new ObjectID();
 const userTwoId = new ObjectID();
 
 const userOneToken = jwt
-  .sign({ userOneId }, process.env.JWT_SECRET)
-  .toString();
+  .sign(
+    { userId: userOneId },
+    process.env.JWT_SECRET,
+    { expiresIn: 86400 },
+  ).toString();
 const userTwoToken = jwt
-  .sign({ userTwoId }, process.env.JWT_SECRET)
-  .toString();
+  .sign(
+    { userId: userTwoId },
+    process.env.JWT_SECRET,
+    { expiresIn: 86400 },
+  ).toString();
 
 const seedUsers = [{
   _id: userOneId,
