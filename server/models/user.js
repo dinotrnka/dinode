@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
+const { TOKEN_LIFETIME } = require('../config/constants');
 
 const UserSchema = new mongoose.Schema({
   email: {
@@ -28,7 +29,7 @@ UserSchema.methods.generateAuthToken = function () {
     .sign(
       { userId },
       process.env.JWT_SECRET,
-      { expiresIn: 86400 },
+      { expiresIn: TOKEN_LIFETIME },
     ).toString();
   user.tokens.push(token);
 

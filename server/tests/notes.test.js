@@ -52,6 +52,18 @@ describe('/notes', () => {
       });
   });
 
+  it('should not create a note with expired access token', (done) => {
+    request(app)
+      .post(`${apiPrefix}/notes`)
+      .set('access_token', seedUsers[1].tokens[0]) // This token expired
+      .send({ })
+      .expect(401)
+      .expect((res) => {
+        expect(res.body.error).toBe('Access token expired');
+      })
+      .end(done);
+  });
+
   it('should not create a note with invalid access token', (done) => {
     request(app)
       .post(`${apiPrefix}/notes`)

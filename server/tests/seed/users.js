@@ -2,6 +2,7 @@ const { ObjectID } = require('mongodb');
 const jwt = require('jsonwebtoken');
 
 const { User } = require('../../models/user');
+const { TOKEN_LIFETIME } = require('../../config/constants');
 
 const userOneId = new ObjectID();
 const userTwoId = new ObjectID();
@@ -10,13 +11,13 @@ const userOneToken = jwt
   .sign(
     { userId: userOneId },
     process.env.JWT_SECRET,
-    { expiresIn: 86400 },
+    { expiresIn: TOKEN_LIFETIME },
   ).toString();
 const userTwoToken = jwt
   .sign(
     { userId: userTwoId },
     process.env.JWT_SECRET,
-    { expiresIn: 86400 },
+    { expiresIn: 0 }, // Simulating expired token!
   ).toString();
 
 const seedUsers = [{
