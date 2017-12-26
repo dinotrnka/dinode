@@ -35,6 +35,26 @@ UserSchema.methods.generateAuthToken = function () {
   return user.save().then(() => token);
 };
 
+UserSchema.statics.findByToken = function (token) {
+  const User = this;
+  let decoded;
+
+  try {
+    decoded = jwt.verify(token, process.env.JWT_SECRET);
+  } catch (e) {
+    if (e.name === 'TokenExpiredError') {
+      return Promise.reject(new Error('Access token expired'));
+    }
+
+    return Promise.reject(new Error('Invalid access token'));
+  }
+
+  return User.findOne({
+    _id: decoded.userId,
+    tokens: token,
+  });
+};
+
 UserSchema.statics.findByCredentials = function (email, password) {
   const User = this;
 

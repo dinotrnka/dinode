@@ -2,11 +2,12 @@ const express = require('express');
 const _ = require('lodash');
 const { check, validationResult } = require('express-validator/check');
 
+const { authenticate } = require('../middleware/authenticate');
 const { Note } = require('../models/note');
 
 const app = express();
 
-app.post('/', [
+app.post('/', authenticate, [
   check('text').exists().withMessage('Text is required'),
 ], async (req, res) => {
   try {
@@ -16,7 +17,10 @@ app.post('/', [
     }
 
     const body = _.pick(req.body, ['text']);
-    const note = new Note(body);
+    const note = new Note({
+      _owner: req.user._id,
+      text: req.body.text,
+    });
 
     await note.save();
     res.send(body);
