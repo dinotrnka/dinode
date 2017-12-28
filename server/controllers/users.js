@@ -4,6 +4,7 @@ const jwt = require('jsonwebtoken');
 const { check, validationResult } = require('express-validator/check');
 
 const { User } = require('../models/user');
+const { authenticate } = require('../middleware/authenticate');
 
 const app = express();
 
@@ -65,6 +66,15 @@ app.post('/login', [
   } catch (e) {
     // res.status(400).send({ error: e.message });
     res.status(400).send({ error: 'Invalid credentials' });
+  }
+});
+
+app.post('/logout', authenticate, async (req, res) => {
+  try {
+    await req.user.removeToken(req.token);
+    res.status(200).send({ success: 'Logged out' });
+  } catch (e) {
+    res.status(400).send({ error: 'Error while logging out' });
   }
 });
 

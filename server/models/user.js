@@ -36,24 +36,37 @@ UserSchema.methods.generateAuthToken = function () {
   return user.save().then(() => token);
 };
 
-UserSchema.statics.findByToken = function (token) {
+UserSchema.methods.removeToken = function (token) {
+  const user = this;
+
+  return user.update({
+    $pull: {
+      tokens: token,
+    },
+  });
+};
+
+UserSchema.statics.findByToken = async function (token) {
   const User = this;
-  let decoded;
 
   try {
-    decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    return User.findOne({
+      _id: decoded.userId,
+      tokens: token,
+    });
   } catch (e) {
     if (e.name === 'TokenExpiredError') {
-      return Promise.reject(new Error('Access token expired'));
+      // Remove expired token from collection
+      const { userId } = jwt.decode(token);
+      const user = await User.findById(userId);
+      if (user) {
+        await user.removeToken(token);
+      }
     }
 
     return Promise.reject(new Error('Invalid access token'));
   }
-
-  return User.findOne({
-    _id: decoded.userId,
-    tokens: token,
-  });
 };
 
 UserSchema.statics.findByCredentials = function (email, password) {

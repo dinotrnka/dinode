@@ -56,10 +56,10 @@ describe('/notes', () => {
     request(app)
       .post(`${apiPrefix}/notes`)
       .set('access_token', seedUsers[1].tokens[0]) // This token expired
-      .send({ })
+      .send({})
       .expect(401)
       .expect((res) => {
-        expect(res.body.error).toBe('Access token expired');
+        expect(res.body.error).toBe('Invalid access token');
       })
       .end(done);
   });
