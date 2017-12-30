@@ -17,13 +17,20 @@ const UserSchema = new mongoose.Schema({
     minlength: 5,
   },
   tokens: [{
-    type: String,
-    required: true,
+    type: {
+      type: String,
+      required: true,
+    },
+    token: {
+      type: String,
+      required: true,
+    },
   }],
 }, { usePushEach: true });
 
 UserSchema.methods.generateAuthToken = function () {
   const user = this;
+  const type = 'auth';
   const userId = user._id.toHexString();
   const token = jwt
     .sign(
@@ -31,7 +38,7 @@ UserSchema.methods.generateAuthToken = function () {
       process.env.JWT_SECRET,
       { expiresIn: TOKEN_LIFETIME },
     ).toString();
-  user.tokens.push(token);
+  user.tokens.push({ type, token });
 
   return user.save().then(() => token);
 };
@@ -41,7 +48,7 @@ UserSchema.methods.removeToken = function (token) {
 
   return user.update({
     $pull: {
-      tokens: token,
+      tokens: { token },
     },
   });
 };
@@ -53,7 +60,8 @@ UserSchema.statics.findByToken = async function (token) {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     return User.findOne({
       _id: decoded.userId,
-      tokens: token,
+      'tokens.type': 'auth',
+      'tokens.token': token,
     });
   } catch (e) {
     if (e.name === 'TokenExpiredError') {
@@ -62,7 +70,7 @@ UserSchema.statics.findByToken = async function (token) {
       const user = await User.findById(userId);
       if (user) {
         await user.removeToken(token);
-        // return Promise.reject(new Error('Access token expired'));
+        return Promise.reject(new Error('Access token expired'));
       }
     }
 

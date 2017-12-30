@@ -36,7 +36,7 @@ app.post('/', [
     });
 
     await user.save();
-    res.send(body);
+    res.send({ success: 'Registration successful' });
   } catch (e) {
     res.status(400).send({ error: 'Error while creating user' });
   }

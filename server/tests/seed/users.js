@@ -7,18 +7,25 @@ const { TOKEN_LIFETIME } = require('../../config/constants');
 const userOneId = new ObjectID();
 const userTwoId = new ObjectID();
 
-const userOneToken = jwt
-  .sign(
-    { userId: userOneId },
-    process.env.JWT_SECRET,
-    { expiresIn: TOKEN_LIFETIME },
-  ).toString();
-const userTwoToken = jwt
-  .sign(
-    { userId: userTwoId },
-    process.env.JWT_SECRET,
-    { expiresIn: 0 }, // Simulating expired token!
-  ).toString();
+const userOneToken = {
+  type: 'auth',
+  token: jwt
+    .sign(
+      { userId: userOneId },
+      process.env.JWT_SECRET,
+      { expiresIn: TOKEN_LIFETIME },
+    ).toString(),
+};
+
+const userTwoToken = {
+  type: 'auth',
+  token: jwt
+    .sign(
+      { userId: userTwoId },
+      process.env.JWT_SECRET,
+      { expiresIn: 0 }, // Simulating expired token
+    ).toString(),
+};
 
 const seedUsers = [{
   _id: userOneId,

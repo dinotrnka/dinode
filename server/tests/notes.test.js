@@ -5,9 +5,10 @@ const expect = require('expect');
 const { app } = require('./../server');
 const { Note } = require('../models/note');
 const { User } = require('../models/user');
-const { seedUsers } = require('./seed/users');
+const { seedUsers, populateUsers } = require('./seed/users');
 const { seedNotes, populateNotes } = require('./seed/notes');
 
+beforeEach(populateUsers);
 beforeEach(populateNotes);
 const apiPrefix = '/api/v1';
 
@@ -17,7 +18,7 @@ describe('/notes', () => {
 
     request(app)
       .post(`${apiPrefix}/notes`)
-      .set('access_token', seedUsers[0].tokens[0])
+      .set('access_token', seedUsers[0].tokens[0].token)
       .send({ text })
       .expect(200)
       .end((err) => {
@@ -35,8 +36,7 @@ describe('/notes', () => {
   it('should not create a note without text', (done) => {
     request(app)
       .post(`${apiPrefix}/notes`)
-      .set('access_token', seedUsers[0].tokens[0])
-      .send({})
+      .set('access_token', seedUsers[0].tokens[0].token)
       .expect(400)
       .expect((res) => {
         expect(res.body.error).toBe('Text is required');
@@ -57,7 +57,6 @@ describe('/notes', () => {
     request(app)
       .post(`${apiPrefix}/notes`)
       .set('access_token', 'somestupidtoken')
-      .send({})
       .expect(401)
       .expect((res) => {
         expect(res.body.error).toBe('Invalid access token');
@@ -68,10 +67,10 @@ describe('/notes', () => {
   it('should not create a note if token expired but logout instead', (done) => {
     request(app)
       .post(`${apiPrefix}/notes`)
-      .set('access_token', seedUsers[1].tokens[0])
+      .set('access_token', seedUsers[1].tokens[0].token)
       .expect(401)
       .expect((res) => {
-        expect(res.body.error).toBe('Invalid access token');
+        expect(res.body.error).toBe('Access token expired');
       })
       .end((err) => {
         if (err) {

@@ -21,6 +21,9 @@ describe('/users', () => {
       .post(`${apiPrefix}/users`)
       .send({ email, password })
       .expect(200)
+      .expect((res) => {
+        expect(res.body.success).toBe('Registration successful');
+      })
       .end((err) => {
         if (err) {
           return done(err);
@@ -207,9 +210,10 @@ describe('/users/login', () => {
         }
 
         User.findById(_id).then((userInDB) => {
-          expect(userInDB.toObject().tokens[1])
-            .toBe(res.body.access_token);
-
+          expect(userInDB.toObject().tokens[1]).toMatchObject({
+            type: 'auth',
+            token: res.body.access_token,
+          });
           done();
         }).catch(e => done(e));
       });
@@ -295,7 +299,7 @@ describe('/users/logout', () => {
   it('should remove auth token on logout', (done) => {
     request(app)
       .post(`${apiPrefix}/users/logout`)
-      .set('access_token', seedUsers[0].tokens[0])
+      .set('access_token', seedUsers[0].tokens[0].token)
       .expect(200)
       .expect((res) => {
         expect(res.body.success).toBe('Logged out');
