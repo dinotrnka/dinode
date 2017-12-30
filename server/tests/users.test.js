@@ -290,3 +290,25 @@ describe('/users/login', () => {
       });
   });
 });
+
+describe('/users/logout', () => {
+  it('should remove auth token on logout', (done) => {
+    request(app)
+      .post(`${apiPrefix}/users/logout`)
+      .set('access_token', seedUsers[0].tokens[0])
+      .expect(200)
+      .expect((res) => {
+        expect(res.body.success).toBe('Logged out');
+      })
+      .end((err) => {
+        if (err) {
+          return done(err);
+        }
+
+        User.findById(seedUsers[0]._id).then((user) => {
+          expect(user.tokens.length).toBe(0);
+          done();
+        }).catch(e => done(e));
+      });
+  });
+});

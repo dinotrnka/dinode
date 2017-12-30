@@ -64,7 +64,6 @@ app.post('/login', [
 
     res.send({ access_token: token, expires: decoded.exp });
   } catch (e) {
-    // res.status(400).send({ error: e.message });
     res.status(400).send({ error: 'Invalid credentials' });
   }
 });

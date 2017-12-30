@@ -62,6 +62,7 @@ UserSchema.statics.findByToken = async function (token) {
       const user = await User.findById(userId);
       if (user) {
         await user.removeToken(token);
+        // return Promise.reject(new Error('Access token expired'));
       }
     }
 

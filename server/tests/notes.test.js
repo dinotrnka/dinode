@@ -4,6 +4,7 @@ const expect = require('expect');
 
 const { app } = require('./../server');
 const { Note } = require('../models/note');
+const { User } = require('../models/user');
 const { seedUsers } = require('./seed/users');
 const { seedNotes, populateNotes } = require('./seed/notes');
 
@@ -52,19 +53,7 @@ describe('/notes', () => {
       });
   });
 
-  it('should not create a note with expired access token', (done) => {
-    request(app)
-      .post(`${apiPrefix}/notes`)
-      .set('access_token', seedUsers[1].tokens[0]) // This token expired
-      .send({})
-      .expect(401)
-      .expect((res) => {
-        expect(res.body.error).toBe('Invalid access token');
-      })
-      .end(done);
-  });
-
-  it('should not create a note with invalid access token', (done) => {
+  it('should not create a note if token is invalid', (done) => {
     request(app)
       .post(`${apiPrefix}/notes`)
       .set('access_token', 'somestupidtoken')
@@ -74,5 +63,25 @@ describe('/notes', () => {
         expect(res.body.error).toBe('Invalid access token');
       })
       .end(done);
+  });
+
+  it('should not create a note if token expired but logout instead', (done) => {
+    request(app)
+      .post(`${apiPrefix}/notes`)
+      .set('access_token', seedUsers[1].tokens[0])
+      .expect(401)
+      .expect((res) => {
+        expect(res.body.error).toBe('Invalid access token');
+      })
+      .end((err) => {
+        if (err) {
+          return done(err);
+        }
+
+        User.findById(seedUsers[1]._id).then((user) => {
+          expect(user.tokens.length).toBe(0);
+          done();
+        }).catch(e => done(e));
+      });
   });
 });
