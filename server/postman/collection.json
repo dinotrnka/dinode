@@ -1,0 +1,191 @@
+{
+	"info": {
+		"name": "Dinode",
+		"_postman_id": "ef435b56-7bce-b39c-0158-fc4e23a0a489",
+		"description": "",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Register",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"id": "bb2ebfbd-627d-4822-84cd-1ff4318fb3c4",
+						"type": "text/javascript",
+						"exec": [
+							"postman.setGlobalVariable(\"email\", \"dinaga@gmail.com\");",
+							"postman.setGlobalVariable(\"password\", \"kamion123\");"
+						]
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"email\": \"{{email}}\",\n\t\"password\": \"{{password}}\"\n}"
+				},
+				"url": {
+					"raw": "{{url}}/users/",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"users",
+						""
+					]
+				},
+				"description": ""
+			},
+			"response": []
+		},
+		{
+			"name": "Login",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"id": "830818f1-88d5-4960-a933-257b3f39bf30",
+						"type": "text/javascript",
+						"exec": [
+							"postman.setGlobalVariable(\"email\", \"dinaga@gmail.com\");",
+							"postman.setGlobalVariable(\"password\", \"kamion123\");"
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"id": "16dd163b-10e0-4351-9d40-57244b6b5cd0",
+						"type": "text/javascript",
+						"exec": [
+							"var response = JSON.parse(responseBody)",
+							"postman.setEnvironmentVariable('access_token', response.access_token);",
+							"postman.setEnvironmentVariable('refresh_token', response.refresh_token);"
+						]
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"email\": \"{{email}}\",\n\t\"password\": \"{{password}}\"\n}"
+				},
+				"url": {
+					"raw": "{{url}}/users/login",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"users",
+						"login"
+					]
+				},
+				"description": ""
+			},
+			"response": []
+		},
+		{
+			"name": "Add Note",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"id": "7eff5e7e-7ae7-483e-975d-0b9421b19a45",
+						"type": "text/javascript",
+						"exec": [
+							"postman.setGlobalVariable(\"text\", \"Kako ovo ide?\");"
+						]
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					},
+					{
+						"key": "access_token",
+						"value": "{{access_token}}"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"text\": \"{{text}}\"\n}"
+				},
+				"url": {
+					"raw": "{{url}}/notes",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"notes"
+					]
+				},
+				"description": ""
+			},
+			"response": []
+		},
+		{
+			"name": "Logout",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"id": "48f82f78-8352-4306-8ae9-a50f24e867c5",
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					},
+					{
+						"key": "access_token",
+						"value": "{{access_token}}"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "{{url}}/users/logout",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"users",
+						"logout"
+					]
+				},
+				"description": ""
+			},
+			"response": []
+		}
+	]
+}
