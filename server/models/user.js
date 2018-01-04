@@ -53,9 +53,15 @@ UserSchema.methods.removeToken = function (type, token) {
   const user = this;
 
   return user.update({
-    $pull: {
-      tokens: { type, token },
-    },
+    $pull: { tokens: { type, token } },
+  });
+};
+
+UserSchema.methods.removeAllTokens = function () {
+  const user = this;
+
+  return user.update({
+    $set: { tokens: [] },
   });
 };
 
