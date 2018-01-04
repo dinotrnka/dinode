@@ -19,7 +19,7 @@ app.post('/', authenticate, [
     const body = _.pick(req.body, ['text']);
     const note = new Note({
       _owner: req.user._id,
-      text: req.body.text,
+      text: body.text,
     });
 
     await note.save();

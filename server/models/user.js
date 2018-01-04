@@ -2,7 +2,6 @@ const mongoose = require('mongoose');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const { ACCESS_TOKEN_LIFETIME, REFRESH_TOKEN_LIFETIME } = require('../config/constants');
-const _ = require('lodash');
 
 const UserSchema = new mongoose.Schema({
   email: {
@@ -65,6 +64,16 @@ UserSchema.methods.removeAllTokens = function () {
   });
 };
 
+UserSchema.methods.checkPassword = function (password) {
+  const user = this;
+
+  return new Promise((resolve) => {
+    bcrypt.compare(password, user.password, (err, res) => {
+      resolve(res); // returns true or false
+    });
+  });
+};
+
 UserSchema.statics.findByToken = async function (type, token) {
   const User = this;
 
@@ -82,9 +91,6 @@ UserSchema.statics.findByToken = async function (type, token) {
       const user = await User.findById(userId);
       if (user) {
         await user.removeToken(type, token);
-
-        const errorMessage = `${_.startCase(type)} token expired`;
-        return Promise.reject(new Error(errorMessage));
       }
     }
 

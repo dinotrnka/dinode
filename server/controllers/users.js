@@ -101,6 +101,35 @@ app.post('/refresh_token', [
   }
 });
 
+app.post('/change_password', authenticate, [
+  check('old_password')
+    .exists().withMessage('Old password is required'),
+  check('new_password')
+    .exists().withMessage('New password is required')
+    .isLength({ min: 5 }).withMessage('Password must be at least 5 characters long'),
+], async (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).send({ error: errors.array()[0].msg });
+  }
+
+  try {
+    const body = _.pick(req.body, ['old_password', 'new_password']);
+    const success = await req.user.checkPassword(body.old_password);
+
+    if (success) {
+      req.user.password = body.new_password;
+      await req.user.save();
+      await req.user.removeAllTokens();
+      res.status(200).send({ error: 'Password successfully changed' });
+    } else {
+      res.status(400).send({ error: 'Incorrect old password' });
+    }
+  } catch (e) {
+    res.status(400).send({ error: 'Error while changing password' });
+  }
+});
+
 app.post('/logout', authenticate, async (req, res) => {
   try {
     await req.user.removeToken('access', req.token);

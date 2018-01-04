@@ -389,7 +389,7 @@ describe('/users/refresh_token', () => {
   });
 
   it('should not refresh token if refresh token does not exist', (done) => {
-    const refresh_token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI1YTQ3ZTg0NjBkZTliYzJmOWQwNWY2ODQiLCJpYXQiOjE1MTUwMTUwMjIsImV4cCI6MTUxNTEwMTQyMn0.ys3cyRiueDiqMu7gwz7hSR4IFicAo6rj8VyltiWqh6w';
+    const refresh_token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI1YTRlNGZiYWVjZThmNjU0YzM2NWE2MDAiLCJpYXQiOjE1MTUxMDUyNjAsImV4cCI6MTUxNTcxMDA2MH0.QOxwVuPq-bYxm-f5bbbYF74DFOIVgWTHl_QAfDYPJbk';
     request(app)
       .post(`${apiPrefix}/users/refresh_token`)
       .send({ refresh_token })
