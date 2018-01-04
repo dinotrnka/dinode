@@ -59,10 +59,43 @@ app.post('/login', [
     const body = _.pick(req.body, ['email', 'password']);
     const user = await User.findByCredentials(body.email, body.password);
 
-    const token = await user.generateAuthToken();
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const access_token = await user.generateToken('access');
+    const refresh_token = await user.generateToken('refresh');
 
-    res.send({ access_token: token, expires: decoded.exp });
+    const decoded = jwt.verify(access_token, process.env.JWT_SECRET);
+
+    res.send({ access_token, refresh_token, expires: decoded.exp });
+  } catch (e) {
+    res.status(400).send({ error: 'Invalid credentials' });
+  }
+});
+
+app.post('/refresh_token', [
+  check('refresh_token')
+    .trim()
+    .exists().withMessage('Refresh token is required'),
+], async (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).send({ error: errors.array()[0].msg });
+  }
+
+  try {
+    const body = _.pick(req.body, ['refresh_token']);
+    const user = await User.findByToken('refresh', body.refresh_token);
+    if (!user) {
+      return res.status(401).send({ error: 'Invalid refresh token' });
+    }
+
+    // Invalidate old refresh token
+    await user.removeToken('refresh', body.refresh_token);
+
+    const access_token = await user.generateToken('access');
+    const refresh_token = await user.generateToken('refresh');
+
+    const decoded = jwt.verify(access_token, process.env.JWT_SECRET);
+
+    res.send({ access_token, refresh_token, expires: decoded.exp });
   } catch (e) {
     res.status(400).send({ error: 'Invalid credentials' });
   }
@@ -70,7 +103,7 @@ app.post('/login', [
 
 app.post('/logout', authenticate, async (req, res) => {
   try {
-    await req.user.removeToken(req.token);
+    await req.user.removeToken('access', req.token);
     res.status(200).send({ success: 'Logged out' });
   } catch (e) {
     res.status(400).send({ error: 'Error while logging out' });

@@ -1,7 +1,8 @@
 const mongoose = require('mongoose');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
-const { TOKEN_LIFETIME } = require('../config/constants');
+const { ACCESS_TOKEN_LIFETIME, REFRESH_TOKEN_LIFETIME } = require('../config/constants');
+const _ = require('lodash');
 
 const UserSchema = new mongoose.Schema({
   email: {
@@ -28,40 +29,45 @@ const UserSchema = new mongoose.Schema({
   }],
 }, { usePushEach: true });
 
-UserSchema.methods.generateAuthToken = function () {
+UserSchema.methods.generateToken = function (type) {
   const user = this;
-  const type = 'auth';
-  const userId = user._id.toHexString();
-  const token = jwt
-    .sign(
-      { userId },
-      process.env.JWT_SECRET,
-      { expiresIn: TOKEN_LIFETIME },
-    ).toString();
-  user.tokens.push({ type, token });
+  let expiresIn = 0;
 
+  if (type === 'access') {
+    expiresIn = ACCESS_TOKEN_LIFETIME;
+  } else if (type === 'refresh') {
+    expiresIn = REFRESH_TOKEN_LIFETIME;
+  } else {
+    throw new Error();
+  }
+
+  const secret = process.env.JWT_SECRET;
+  const userId = user._id.toHexString();
+  const token = jwt.sign({ userId }, secret, { expiresIn }).toString();
+
+  user.tokens.push({ type, token });
   return user.save().then(() => token);
 };
 
-UserSchema.methods.removeToken = function (token) {
+UserSchema.methods.removeToken = function (type, token) {
   const user = this;
 
   return user.update({
     $pull: {
-      tokens: { token },
+      tokens: { type, token },
     },
   });
 };
 
-UserSchema.statics.findByToken = async function (token) {
+UserSchema.statics.findByToken = async function (type, token) {
   const User = this;
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
     return User.findOne({
       _id: decoded.userId,
-      'tokens.type': 'auth',
-      'tokens.token': token,
+      tokens: { $elemMatch: { type, token } },
     });
   } catch (e) {
     if (e.name === 'TokenExpiredError') {
@@ -69,12 +75,14 @@ UserSchema.statics.findByToken = async function (token) {
       const { userId } = jwt.decode(token);
       const user = await User.findById(userId);
       if (user) {
-        await user.removeToken(token);
-        return Promise.reject(new Error('Access token expired'));
+        await user.removeToken(type, token);
+
+        const errorMessage = `${_.startCase(type)} token expired`;
+        return Promise.reject(new Error(errorMessage));
       }
     }
 
-    return Promise.reject(new Error('Invalid access token'));
+    return Promise.reject(new Error(`Invalid ${type} token`));
   }
 };
 

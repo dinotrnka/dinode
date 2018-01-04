@@ -3,7 +3,7 @@ const { User } = require('../models/user');
 const authenticate = (req, res, next) => {
   const token = req.header('access_token');
 
-  User.findByToken(token).then((user) => {
+  User.findByToken('access', token).then((user) => {
     if (!user) {
       return res.status(401).send({ error: 'Invalid access token' });
     }

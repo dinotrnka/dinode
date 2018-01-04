@@ -192,8 +192,30 @@ describe('/users', () => {
   });
 });
 
+describe('/users/logout', () => {
+  it('should remove access token on logout', (done) => {
+    request(app)
+      .post(`${apiPrefix}/users/logout`)
+      .set('access_token', seedUsers[0].tokens[0].token)
+      .expect(200)
+      .expect((res) => {
+        expect(res.body.success).toBe('Logged out');
+      })
+      .end((err) => {
+        if (err) {
+          return done(err);
+        }
+
+        User.findById(seedUsers[0]._id).then((user) => {
+          expect(user.tokens.length).toBe(1); // Refresh token remains active
+          done();
+        }).catch(e => done(e));
+      });
+  });
+});
+
 describe('/users/login', () => {
-  it('should log in user with correct credentials and receive access token', (done) => {
+  it('should log in user with correct credentials and receive tokens', (done) => {
     const { _id, email, password } = seedUsers[0];
 
     request(app)
@@ -202,6 +224,7 @@ describe('/users/login', () => {
       .expect(200)
       .expect((res) => {
         expect(res.body).toHaveProperty('access_token');
+        expect(res.body).toHaveProperty('refresh_token');
         expect(res.body).toHaveProperty('expires');
       })
       .end((err, res) => {
@@ -210,9 +233,13 @@ describe('/users/login', () => {
         }
 
         User.findById(_id).then((userInDB) => {
-          expect(userInDB.toObject().tokens[1]).toMatchObject({
-            type: 'auth',
+          expect(userInDB.toObject().tokens[2]).toMatchObject({
+            type: 'access',
             token: res.body.access_token,
+          });
+          expect(userInDB.toObject().tokens[3]).toMatchObject({
+            type: 'refresh',
+            token: res.body.refresh_token,
           });
           done();
         }).catch(e => done(e));
@@ -295,24 +322,105 @@ describe('/users/login', () => {
   });
 });
 
-describe('/users/logout', () => {
-  it('should remove auth token on logout', (done) => {
+describe('/users/refresh_token', () => {
+  it('should refresh token with correct refresh token value', (done) => {
+    const refresh_token = seedUsers[0].tokens[1].token;
+
     request(app)
-      .post(`${apiPrefix}/users/logout`)
-      .set('access_token', seedUsers[0].tokens[0].token)
+      .post(`${apiPrefix}/users/refresh_token`)
+      .send({ refresh_token })
       .expect(200)
       .expect((res) => {
-        expect(res.body.success).toBe('Logged out');
+        expect(res.body).toHaveProperty('access_token');
+        expect(res.body).toHaveProperty('refresh_token');
+        expect(res.body).toHaveProperty('expires');
+      })
+      .end((err, res) => {
+        if (err) {
+          return done(err);
+        }
+
+        User.findByToken('refresh', res.body.refresh_token).then((userInDB) => {
+          expect(userInDB.toObject().tokens[1]).toMatchObject({
+            type: 'access',
+            token: res.body.access_token,
+          });
+          expect(userInDB.toObject().tokens[2]).toMatchObject({
+            type: 'refresh',
+            token: res.body.refresh_token,
+          });
+          done();
+        }).catch(e => done(e));
+      });
+  });
+
+  it('should not refresh token if refresh token is not provided', (done) => {
+    request(app)
+      .post(`${apiPrefix}/users/refresh_token`)
+      .expect(400)
+      .expect((res) => {
+        expect(res.body.error).toBe('Refresh token is required');
       })
       .end((err) => {
         if (err) {
           return done(err);
         }
 
-        User.findById(seedUsers[0]._id).then((user) => {
-          expect(user.tokens.length).toBe(0);
-          done();
-        }).catch(e => done(e));
+        done();
+      });
+  });
+
+  it('should not refresh token if refresh token is invalid', (done) => {
+    const refresh_token = 'What am I doing here?';
+    request(app)
+      .post(`${apiPrefix}/users/refresh_token`)
+      .send({ refresh_token })
+      .expect(400)
+      .expect((res) => {
+        expect(res.body.error).toBe('Invalid credentials');
+      })
+      .end((err) => {
+        if (err) {
+          return done(err);
+        }
+
+        done();
+      });
+  });
+
+  it('should not refresh token if refresh token does not exist', (done) => {
+    const refresh_token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI1YTQ3ZTg0NjBkZTliYzJmOWQwNWY2ODQiLCJpYXQiOjE1MTUwMTUwMjIsImV4cCI6MTUxNTEwMTQyMn0.ys3cyRiueDiqMu7gwz7hSR4IFicAo6rj8VyltiWqh6w';
+    request(app)
+      .post(`${apiPrefix}/users/refresh_token`)
+      .send({ refresh_token })
+      .expect(401)
+      .expect((res) => {
+        expect(res.body.error).toBe('Invalid refresh token');
+      })
+      .end((err) => {
+        if (err) {
+          return done(err);
+        }
+
+        done();
+      });
+  });
+
+  it('should not refresh token with access token', (done) => {
+    const refresh_token = seedUsers[0].tokens[0].token;
+    request(app)
+      .post(`${apiPrefix}/users/refresh_token`)
+      .send({ refresh_token })
+      .expect(401)
+      .expect((res) => {
+        expect(res.body.error).toBe('Invalid refresh token');
+      })
+      .end((err) => {
+        if (err) {
+          return done(err);
+        }
+
+        done();
       });
   });
 });

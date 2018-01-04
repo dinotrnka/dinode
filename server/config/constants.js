@@ -1,3 +1,4 @@
-const TOKEN_LIFETIME = 86400;
+const ACCESS_TOKEN_LIFETIME = 600; // 10 minutes
+const REFRESH_TOKEN_LIFETIME = 604800; // 1 week
 
-module.exports = { TOKEN_LIFETIME };
+module.exports = { ACCESS_TOKEN_LIFETIME, REFRESH_TOKEN_LIFETIME };

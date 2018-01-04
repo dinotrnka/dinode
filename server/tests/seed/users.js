@@ -2,23 +2,33 @@ const { ObjectID } = require('mongodb');
 const jwt = require('jsonwebtoken');
 
 const { User } = require('../../models/user');
-const { TOKEN_LIFETIME } = require('../../config/constants');
+const { ACCESS_TOKEN_LIFETIME, REFRESH_TOKEN_LIFETIME } = require('../../config/constants');
 
 const userOneId = new ObjectID();
 const userTwoId = new ObjectID();
 
-const userOneToken = {
-  type: 'auth',
+const userOneAccessToken = {
+  type: 'access',
   token: jwt
     .sign(
       { userId: userOneId },
       process.env.JWT_SECRET,
-      { expiresIn: TOKEN_LIFETIME },
+      { expiresIn: ACCESS_TOKEN_LIFETIME },
     ).toString(),
 };
 
-const userTwoToken = {
-  type: 'auth',
+const userOneRefreshToken = {
+  type: 'refresh',
+  token: jwt
+    .sign(
+      { userId: userOneId },
+      process.env.JWT_SECRET,
+      { expiresIn: REFRESH_TOKEN_LIFETIME },
+    ).toString(),
+};
+
+const userTwoAccessToken = {
+  type: 'access',
   token: jwt
     .sign(
       { userId: userTwoId },
@@ -27,16 +37,26 @@ const userTwoToken = {
     ).toString(),
 };
 
+const userTwoRefreshToken = {
+  type: 'refresh',
+  token: jwt
+    .sign(
+      { userId: userTwoId },
+      process.env.JWT_SECRET,
+      { expiresIn: REFRESH_TOKEN_LIFETIME },
+    ).toString(),
+};
+
 const seedUsers = [{
   _id: userOneId,
   email: 'dinaga@gmail.com',
   password: 'dinaga123',
-  tokens: [userOneToken],
+  tokens: [userOneAccessToken, userOneRefreshToken],
 }, {
   _id: userTwoId,
   email: 'kiryu@gmail.com',
   password: 'kiryu123',
-  tokens: [userTwoToken],
+  tokens: [userTwoAccessToken, userTwoRefreshToken],
 }];
 
 const populateUsers = (done) => {

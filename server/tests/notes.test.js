@@ -64,6 +64,17 @@ describe('/notes', () => {
       .end(done);
   });
 
+  it('should not create a note with refresh token', (done) => {
+    request(app)
+      .post(`${apiPrefix}/notes`)
+      .set('access_token', seedUsers[0].tokens[1].token)
+      .expect(401)
+      .expect((res) => {
+        expect(res.body.error).toBe('Invalid access token');
+      })
+      .end(done);
+  });
+
   it('should not create a note if token expired but logout instead', (done) => {
     request(app)
       .post(`${apiPrefix}/notes`)
@@ -78,7 +89,7 @@ describe('/notes', () => {
         }
 
         User.findById(seedUsers[1]._id).then((user) => {
-          expect(user.tokens.length).toBe(0);
+          expect(user.tokens.length).toBe(1); // Refresh token remains active
           done();
         }).catch(e => done(e));
       });
