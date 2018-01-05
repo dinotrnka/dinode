@@ -372,6 +372,7 @@ describe('/users/refresh_token', () => {
 
   it('should not refresh token if refresh token is invalid', (done) => {
     const refresh_token = 'What am I doing here?';
+
     request(app)
       .post(`${apiPrefix}/users/refresh_token`)
       .send({ refresh_token })
@@ -390,6 +391,7 @@ describe('/users/refresh_token', () => {
 
   it('should not refresh token if refresh token does not exist', (done) => {
     const refresh_token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI1YTRlNGZiYWVjZThmNjU0YzM2NWE2MDAiLCJpYXQiOjE1MTUxMDUyNjAsImV4cCI6MTUxNTcxMDA2MH0.QOxwVuPq-bYxm-f5bbbYF74DFOIVgWTHl_QAfDYPJbk';
+
     request(app)
       .post(`${apiPrefix}/users/refresh_token`)
       .send({ refresh_token })
@@ -421,6 +423,35 @@ describe('/users/refresh_token', () => {
         }
 
         done();
+      });
+  });
+
+describe('/users/change_password', () => {
+  it('should change to new password if old password is correct', (done) => {
+    const old_password = 'dinaga123';
+    const new_password = 'dinaga456';
+
+    request(app)
+      .post(`${apiPrefix}/users/change_password`)
+      .set('access_token', seedUsers[0].tokens[0].token)
+      .send({ old_password, new_password })
+      .expect(200)
+      .expect((res) => {
+        expect(res.body.success).toBe('Password successfully changed');
+      })
+      .end(async (err) => {
+        if (err) {
+          return done(err);
+        }
+
+        try {
+          const userInDB = await User.findById(seedUsers[0]._id);
+          const passwordIsCorrect = await userInDB.checkPassword(new_password);
+          expect(passwordIsCorrect).toBeTruthy();
+          done();
+        } catch (e) {
+          done(e);
+        }
       });
   });
 });

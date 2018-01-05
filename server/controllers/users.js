@@ -121,7 +121,7 @@ app.post('/change_password', authenticate, [
       req.user.password = body.new_password;
       await req.user.save();
       await req.user.removeAllTokens();
-      res.status(200).send({ error: 'Password successfully changed' });
+      res.status(200).send({ success: 'Password successfully changed' });
     } else {
       res.status(400).send({ error: 'Incorrect old password' });
     }
