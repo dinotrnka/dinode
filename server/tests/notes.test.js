@@ -21,15 +21,18 @@ describe('/notes', () => {
       .set('access_token', seedUsers[0].tokens[0].token)
       .send({ text })
       .expect(200)
-      .end((err) => {
+      .end(async (err) => {
         if (err) {
           return done(err);
         }
 
-        Note.find({ text }).then((notes) => {
+        try {
+          const notes = await Note.find({ text });
           expect(notes.length).toBe(1);
           done();
-        }).catch(e => done(e));
+        } catch (e) {
+          done(e);
+        }
       });
   });
 
@@ -41,15 +44,18 @@ describe('/notes', () => {
       .expect((res) => {
         expect(res.body.error).toBe('Text is required');
       })
-      .end((err) => {
+      .end(async (err) => {
         if (err) {
           return done(err);
         }
 
-        Note.find({}).then((notes) => {
+        try {
+          const notes = await Note.find({});
           expect(notes.length).toBe(seedNotes.length);
           done();
-        }).catch(e => done(e));
+        } catch (e) {
+          done(e);
+        }
       });
   });
 
@@ -83,15 +89,18 @@ describe('/notes', () => {
       .expect((res) => {
         expect(res.body.error).toBe('Invalid access token');
       })
-      .end((err) => {
+      .end(async (err) => {
         if (err) {
           return done(err);
         }
 
-        User.findById(seedUsers[1]._id).then((user) => {
+        try {
+          const user = await User.findById(seedUsers[1]._id);
           expect(user.tokens.length).toBe(1); // Refresh token remains active
           done();
-        }).catch(e => done(e));
+        } catch (e) {
+          done(e);
+        }
       });
   });
 });

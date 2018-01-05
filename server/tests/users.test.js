@@ -24,16 +24,19 @@ describe('/users', () => {
       .expect((res) => {
         expect(res.body.success).toBe('Registration successful');
       })
-      .end((err) => {
+      .end(async (err) => {
         if (err) {
           return done(err);
         }
 
-        User.find({ email }).then((users) => {
+        try {
+          const users = await User.find({ email });
           expect(users.length).toBe(1);
           expect(users[0].email).toBe(email);
           done();
-        }).catch(e => done(e));
+        } catch (e) {
+          done(e);
+        }
       });
   });
 
@@ -45,15 +48,18 @@ describe('/users', () => {
       .post(`${apiPrefix}/users`)
       .send({ email, password })
       .expect(200)
-      .end((err) => {
+      .end(async (err) => {
         if (err) {
           return done(err);
         }
 
-        User.find({ email: email.toLowerCase() }).then((users) => {
+        try {
+          const users = await User.find({ email: email.toLowerCase() });
           expect(users.length).toBe(1);
           done();
-        }).catch(e => done(e));
+        } catch (e) {
+          done(e);
+        }
       });
   });
 
@@ -65,15 +71,18 @@ describe('/users', () => {
       .post(`${apiPrefix}/users`)
       .send({ email, password })
       .expect(200)
-      .end((err) => {
+      .end(async (err) => {
         if (err) {
           return done(err);
         }
 
-        User.find({ email: email.trim() }).then((users) => {
+        try {
+          const users = await User.find({ email: email.trim() });
           expect(users.length).toBe(1);
           done();
-        }).catch(e => done(e));
+        } catch (e) {
+          done(e);
+        }
       });
   });
 
@@ -87,15 +96,18 @@ describe('/users', () => {
       .expect((res) => {
         expect(res.body.error).toBe('Email is required');
       })
-      .end((err) => {
+      .end(async (err) => {
         if (err) {
           return done(err);
         }
 
-        User.find().then((users) => {
+        try {
+          const users = await User.find();
           expect(users.length).toBe(seedUsers.length);
           done();
-        }).catch(e => done(e));
+        } catch (e) {
+          done(e);
+        }
       });
   });
 
@@ -109,15 +121,18 @@ describe('/users', () => {
       .expect((res) => {
         expect(res.body.error).toBe('Password is required');
       })
-      .end((err) => {
+      .end(async (err) => {
         if (err) {
           return done(err);
         }
 
-        User.find().then((users) => {
+        try {
+          const users = await User.find();
           expect(users.length).toBe(seedUsers.length);
           done();
-        }).catch(e => done(e));
+        } catch (e) {
+          done(e);
+        }
       });
   });
 
@@ -132,15 +147,17 @@ describe('/users', () => {
       .expect((res) => {
         expect(res.body.error).toBe('Enter a valid email address');
       })
-      .end((err) => {
+      .end(async (err) => {
         if (err) {
           return done(err);
         }
-
-        User.find().then((users) => {
+        try {
+          const users = await User.find();
           expect(users.length).toBe(seedUsers.length);
           done();
-        }).catch(e => done(e));
+        } catch (e) {
+          done(e);
+        }
       });
   });
 
@@ -155,15 +172,18 @@ describe('/users', () => {
       .expect((res) => {
         expect(res.body.error).toBe(`User with email ${email} already exists`);
       })
-      .end((err) => {
+      .end(async (err) => {
         if (err) {
           return done(err);
         }
 
-        User.find().then((users) => {
+        try {
+          const users = await User.find();
           expect(users.length).toBe(seedUsers.length);
           done();
-        }).catch(e => done(e));
+        } catch (e) {
+          done(e);
+        }
       });
   });
 
@@ -179,15 +199,18 @@ describe('/users', () => {
       .expect((res) => {
         expect(res.body.error).toBe('Password must be at least 5 characters long');
       })
-      .end((err) => {
+      .end(async (err) => {
         if (err) {
           return done(err);
         }
 
-        User.find().then((users) => {
+        try {
+          const users = await User.find();
           expect(users.length).toBe(seedUsers.length);
           done();
-        }).catch(e => done(e));
+        } catch (e) {
+          done(e);
+        }
       });
   });
 });
@@ -201,15 +224,18 @@ describe('/users/logout', () => {
       .expect((res) => {
         expect(res.body.success).toBe('Logged out');
       })
-      .end((err) => {
+      .end(async (err) => {
         if (err) {
           return done(err);
         }
 
-        User.findById(seedUsers[0]._id).then((user) => {
+        try {
+          const user = await User.findById(seedUsers[0]._id);
           expect(user.tokens.length).toBe(1); // Refresh token remains active
           done();
-        }).catch(e => done(e));
+        } catch (e) {
+          done(e);
+        }
       });
   });
 });
@@ -227,22 +253,25 @@ describe('/users/login', () => {
         expect(res.body).toHaveProperty('refresh_token');
         expect(res.body).toHaveProperty('expires');
       })
-      .end((err, res) => {
+      .end(async (err, res) => {
         if (err) {
           return done(err);
         }
 
-        User.findById(_id).then((userInDB) => {
-          expect(userInDB.toObject().tokens[2]).toMatchObject({
+        try {
+          const user = await User.findById(_id);
+          expect(user.toObject().tokens[2]).toMatchObject({
             type: 'access',
             token: res.body.access_token,
           });
-          expect(userInDB.toObject().tokens[3]).toMatchObject({
+          expect(user.toObject().tokens[3]).toMatchObject({
             type: 'refresh',
             token: res.body.refresh_token,
           });
           done();
-        }).catch(e => done(e));
+        } catch (e) {
+          done(e);
+        }
       });
   });
 
@@ -316,7 +345,6 @@ describe('/users/login', () => {
         if (err) {
           return done(err);
         }
-
         done();
       });
   });
@@ -335,22 +363,25 @@ describe('/users/refresh_token', () => {
         expect(res.body).toHaveProperty('refresh_token');
         expect(res.body).toHaveProperty('expires');
       })
-      .end((err, res) => {
+      .end(async (err, res) => {
         if (err) {
           return done(err);
         }
 
-        User.findByToken('refresh', res.body.refresh_token).then((userInDB) => {
-          expect(userInDB.toObject().tokens[1]).toMatchObject({
+        try {
+          const user = await User.findByToken('refresh', res.body.refresh_token);
+          expect(user.toObject().tokens[1]).toMatchObject({
             type: 'access',
             token: res.body.access_token,
           });
-          expect(userInDB.toObject().tokens[2]).toMatchObject({
+          expect(user.toObject().tokens[2]).toMatchObject({
             type: 'refresh',
             token: res.body.refresh_token,
           });
           done();
-        }).catch(e => done(e));
+        } catch (e) {
+          done(e);
+        }
       });
   });
 
@@ -365,7 +396,6 @@ describe('/users/refresh_token', () => {
         if (err) {
           return done(err);
         }
-
         done();
       });
   });
@@ -384,7 +414,6 @@ describe('/users/refresh_token', () => {
         if (err) {
           return done(err);
         }
-
         done();
       });
   });
@@ -403,7 +432,6 @@ describe('/users/refresh_token', () => {
         if (err) {
           return done(err);
         }
-
         done();
       });
   });
@@ -421,10 +449,10 @@ describe('/users/refresh_token', () => {
         if (err) {
           return done(err);
         }
-
         done();
       });
   });
+});
 
 describe('/users/change_password', () => {
   it('should change to new password if old password is correct', (done) => {
@@ -443,10 +471,9 @@ describe('/users/change_password', () => {
         if (err) {
           return done(err);
         }
-
         try {
-          const userInDB = await User.findById(seedUsers[0]._id);
-          const passwordIsCorrect = await userInDB.checkPassword(new_password);
+          const user = await User.findById(seedUsers[0]._id);
+          const passwordIsCorrect = await user.checkPassword(new_password);
           expect(passwordIsCorrect).toBeTruthy();
           done();
         } catch (e) {
