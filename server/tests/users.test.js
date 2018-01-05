@@ -9,16 +9,22 @@ const {
   populateUsers,
 } = require('./seed/users');
 
-beforeEach(populateUsers);
-const apiPrefix = '/api/v1';
+const URL_API = '/api/v1';
+const URL_USERS = '/users';
+const URL_LOGIN = '/users/login';
+const URL_LOGOUT = '/users/logout';
+const URL_REFRESH_TOKEN = '/users/refresh_token';
+const URL_CHANGE_PASSWORD = '/users/change_password';
 
-describe('/users', () => {
+beforeEach(populateUsers);
+
+describe(URL_USERS, () => {
   it('should create a user with valid email and password', (done) => {
     const email = 'testuser@gmail.com';
     const password = 'password';
 
     request(app)
-      .post(`${apiPrefix}/users`)
+      .post(URL_API + URL_USERS)
       .send({ email, password })
       .expect(200)
       .expect((res) => {
@@ -45,7 +51,7 @@ describe('/users', () => {
     const password = 'password';
 
     request(app)
-      .post(`${apiPrefix}/users`)
+      .post(URL_API + URL_USERS)
       .send({ email, password })
       .expect(200)
       .end(async (err) => {
@@ -68,7 +74,7 @@ describe('/users', () => {
     const password = 'password';
 
     request(app)
-      .post(`${apiPrefix}/users`)
+      .post(URL_API + URL_USERS)
       .send({ email, password })
       .expect(200)
       .end(async (err) => {
@@ -90,7 +96,7 @@ describe('/users', () => {
     const password = 'password';
 
     request(app)
-      .post(`${apiPrefix}/users`)
+      .post(URL_API + URL_USERS)
       .send({ password })
       .expect(400)
       .expect((res) => {
@@ -115,7 +121,7 @@ describe('/users', () => {
     const email = 'email@gmail.com';
 
     request(app)
-      .post(`${apiPrefix}/users`)
+      .post(URL_API + URL_USERS)
       .send({ email })
       .expect(400)
       .expect((res) => {
@@ -141,7 +147,7 @@ describe('/users', () => {
     const password = 'somepass';
 
     request(app)
-      .post(`${apiPrefix}/users`)
+      .post(URL_API + URL_USERS)
       .send({ email, password })
       .expect(400)
       .expect((res) => {
@@ -166,7 +172,7 @@ describe('/users', () => {
     const password = 'somepass';
 
     request(app)
-      .post(`${apiPrefix}/users`)
+      .post(URL_API + URL_USERS)
       .send({ email, password })
       .expect(400)
       .expect((res) => {
@@ -193,7 +199,7 @@ describe('/users', () => {
     const password = 'wtf';
 
     request(app)
-      .post(`${apiPrefix}/users`)
+      .post(URL_API + URL_USERS)
       .send({ email, password })
       .expect(400)
       .expect((res) => {
@@ -215,10 +221,10 @@ describe('/users', () => {
   });
 });
 
-describe('/users/logout', () => {
+describe(URL_LOGOUT, () => {
   it('should remove access token on logout', (done) => {
     request(app)
-      .post(`${apiPrefix}/users/logout`)
+      .post(URL_API + URL_LOGOUT)
       .set('access_token', seedUsers[0].tokens[0].token)
       .expect(200)
       .expect((res) => {
@@ -240,12 +246,12 @@ describe('/users/logout', () => {
   });
 });
 
-describe('/users/login', () => {
+describe(URL_LOGIN, () => {
   it('should log in user with correct credentials and receive tokens', (done) => {
     const { _id, email, password } = seedUsers[0];
 
     request(app)
-      .post(`${apiPrefix}/users/login`)
+      .post(URL_API + URL_LOGIN)
       .send({ email, password })
       .expect(200)
       .expect((res) => {
@@ -279,7 +285,7 @@ describe('/users/login', () => {
     const password = 'lubenica';
 
     request(app)
-      .post(`${apiPrefix}/users/login`)
+      .post(URL_API + URL_LOGIN)
       .send({ password })
       .expect(400)
       .expect((res) => {
@@ -297,7 +303,7 @@ describe('/users/login', () => {
     const email = 'karabaja@mora.dalje';
 
     request(app)
-      .post(`${apiPrefix}/users/login`)
+      .post(URL_API + URL_LOGIN)
       .send({ email })
       .expect(400)
       .expect((res) => {
@@ -316,7 +322,7 @@ describe('/users/login', () => {
     const password = 'whatever';
 
     request(app)
-      .post(`${apiPrefix}/users/login`)
+      .post(URL_API + URL_LOGIN)
       .send({ email, password })
       .expect(400)
       .expect((res) => {
@@ -335,7 +341,7 @@ describe('/users/login', () => {
     const password = 'obviouslywrongpassword';
 
     request(app)
-      .post(`${apiPrefix}/users/login`)
+      .post(URL_API + URL_LOGIN)
       .send({ email, password })
       .expect(400)
       .expect((res) => {
@@ -350,12 +356,12 @@ describe('/users/login', () => {
   });
 });
 
-describe('/users/refresh_token', () => {
+describe(URL_REFRESH_TOKEN, () => {
   it('should refresh token with correct refresh token value', (done) => {
     const refresh_token = seedUsers[0].tokens[1].token;
 
     request(app)
-      .post(`${apiPrefix}/users/refresh_token`)
+      .post(URL_API + URL_REFRESH_TOKEN)
       .send({ refresh_token })
       .expect(200)
       .expect((res) => {
@@ -387,7 +393,7 @@ describe('/users/refresh_token', () => {
 
   it('should not refresh token if refresh token is not provided', (done) => {
     request(app)
-      .post(`${apiPrefix}/users/refresh_token`)
+      .post(URL_API + URL_REFRESH_TOKEN)
       .expect(400)
       .expect((res) => {
         expect(res.body.error).toBe('Refresh token is required');
@@ -404,7 +410,7 @@ describe('/users/refresh_token', () => {
     const refresh_token = 'What am I doing here?';
 
     request(app)
-      .post(`${apiPrefix}/users/refresh_token`)
+      .post(URL_API + URL_REFRESH_TOKEN)
       .send({ refresh_token })
       .expect(400)
       .expect((res) => {
@@ -422,7 +428,7 @@ describe('/users/refresh_token', () => {
     const refresh_token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI1YTRlNGZiYWVjZThmNjU0YzM2NWE2MDAiLCJpYXQiOjE1MTUxMDUyNjAsImV4cCI6MTUxNTcxMDA2MH0.QOxwVuPq-bYxm-f5bbbYF74DFOIVgWTHl_QAfDYPJbk';
 
     request(app)
-      .post(`${apiPrefix}/users/refresh_token`)
+      .post(URL_API + URL_REFRESH_TOKEN)
       .send({ refresh_token })
       .expect(401)
       .expect((res) => {
@@ -439,7 +445,7 @@ describe('/users/refresh_token', () => {
   it('should not refresh token with access token', (done) => {
     const refresh_token = seedUsers[0].tokens[0].token;
     request(app)
-      .post(`${apiPrefix}/users/refresh_token`)
+      .post(URL_API + URL_REFRESH_TOKEN)
       .send({ refresh_token })
       .expect(401)
       .expect((res) => {
@@ -454,13 +460,13 @@ describe('/users/refresh_token', () => {
   });
 });
 
-describe('/users/change_password', () => {
-  it('should change to new password if old password is correct', (done) => {
+describe(URL_CHANGE_PASSWORD, () => {
+  it('should change password and clear all sessions if old password is correct', (done) => {
     const old_password = 'dinaga123';
     const new_password = 'dinaga456';
 
     request(app)
-      .post(`${apiPrefix}/users/change_password`)
+      .post(URL_API + URL_CHANGE_PASSWORD)
       .set('access_token', seedUsers[0].tokens[0].token)
       .send({ old_password, new_password })
       .expect(200)
@@ -475,10 +481,108 @@ describe('/users/change_password', () => {
           const user = await User.findById(seedUsers[0]._id);
           const passwordIsCorrect = await user.checkPassword(new_password);
           expect(passwordIsCorrect).toBeTruthy();
+          expect(user.tokens).toHaveLength(0);
           done();
         } catch (e) {
           done(e);
         }
+      });
+  });
+
+  it('should not change password if old password is not provided', (done) => {
+    const new_password = 'dinaga456';
+
+    request(app)
+      .post(URL_API + URL_CHANGE_PASSWORD)
+      .set('access_token', seedUsers[0].tokens[0].token)
+      .send({ new_password })
+      .expect(400)
+      .expect((res) => {
+        expect(res.body.error).toBe('Old password is required');
+      })
+      .end(async (err) => {
+        if (err) {
+          return done(err);
+        }
+        done();
+      });
+  });
+
+  it('should not change password if new password is not provided', (done) => {
+    const old_password = 'dinaga123';
+
+    request(app)
+      .post(URL_API + URL_CHANGE_PASSWORD)
+      .set('access_token', seedUsers[0].tokens[0].token)
+      .send({ old_password })
+      .expect(400)
+      .expect((res) => {
+        expect(res.body.error).toBe('New password is required');
+      })
+      .end(async (err) => {
+        if (err) {
+          return done(err);
+        }
+        done();
+      });
+  });
+
+  it('should not change password if new password has less than 5 characters', (done) => {
+    const old_password = 'dinaga123';
+    const new_password = 'hi';
+
+    request(app)
+      .post(URL_API + URL_CHANGE_PASSWORD)
+      .set('access_token', seedUsers[0].tokens[0].token)
+      .send({ old_password, new_password })
+      .expect(400)
+      .expect((res) => {
+        expect(res.body.error).toBe('Password must be at least 5 characters long');
+      })
+      .end(async (err) => {
+        if (err) {
+          return done(err);
+        }
+        done();
+      });
+  });
+
+  it('should not change password if access token is invalid', (done) => {
+    const old_password = 'whatsup dude';
+    const new_password = 'dinaga456';
+
+    request(app)
+      .post(URL_API + URL_CHANGE_PASSWORD)
+      .send({ old_password, new_password })
+      .expect(401)
+      .expect((res) => {
+        expect(res.body.error).toBe('Invalid access token');
+      })
+      .end(async (err) => {
+        if (err) {
+          return done(err);
+        }
+        done();
+      });
+  });
+
+  it('should not change password if old password is incorrect', (done) => {
+    const old_password = 'whatsup dude';
+    const new_password = 'dinaga456';
+
+    request(app)
+      .post(URL_API + URL_CHANGE_PASSWORD)
+      .set('access_token', seedUsers[0].tokens[0].token)
+      .send({ old_password, new_password })
+      .expect(400)
+      .expect((res) => {
+        expect(res.body.error).toBe('Incorrect old password');
+      })
+      .end(async (err) => {
+        if (err) {
+          return done(err);
+        }
+        done();
       });
   });
 });
