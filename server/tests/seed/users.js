@@ -4,71 +4,71 @@ const jwt = require('jsonwebtoken');
 const { User } = require('../../models/user');
 const { ACCESS_TOKEN_LIFETIME, REFRESH_TOKEN_LIFETIME } = require('../../config/constants');
 
-const userOneId = new ObjectID();
-const userTwoId = new ObjectID();
+const user_one_id = new ObjectID();
+const user_two_id = new ObjectID();
 
-const userOneAccessToken = {
+const user_one_access_token = {
   type: 'access',
   token: jwt
     .sign(
-      { userId: userOneId },
+      { user_id: user_one_id },
       process.env.JWT_SECRET,
       { expiresIn: ACCESS_TOKEN_LIFETIME },
     ).toString(),
 };
 
-const userOneRefreshToken = {
+const user_one_refresh_token = {
   type: 'refresh',
   token: jwt
     .sign(
-      { userId: userOneId },
+      { user_id: user_one_id },
       process.env.JWT_SECRET,
       { expiresIn: REFRESH_TOKEN_LIFETIME },
     ).toString(),
 };
 
-const userTwoAccessToken = {
+const user_two_access_token = {
   type: 'access',
   token: jwt
     .sign(
-      { userId: userTwoId },
+      { user_id: user_two_id },
       process.env.JWT_SECRET,
       { expiresIn: 0 }, // Simulating expired token
     ).toString(),
 };
 
-const userTwoRefreshToken = {
+const user_two_refresh_token = {
   type: 'refresh',
   token: jwt
     .sign(
-      { userId: userTwoId },
+      { user_id: user_two_id },
       process.env.JWT_SECRET,
       { expiresIn: REFRESH_TOKEN_LIFETIME },
     ).toString(),
 };
 
-const seedUsers = [{
-  _id: userOneId,
+const seed_users = [{
+  _id: user_one_id,
   email: 'dinaga@gmail.com',
   password: 'dinaga123',
-  tokens: [userOneAccessToken, userOneRefreshToken],
+  tokens: [user_one_access_token, user_one_refresh_token],
 }, {
-  _id: userTwoId,
+  _id: user_two_id,
   email: 'kiryu@gmail.com',
   password: 'kiryu123',
-  tokens: [userTwoAccessToken, userTwoRefreshToken],
+  tokens: [user_two_access_token, user_two_refresh_token],
 }];
 
-const populateUsers = (done) => {
+const populate_users = (done) => {
   User.remove({}).then(() => {
-    const userOne = new User(seedUsers[0]).save();
-    const userTwo = new User(seedUsers[1]).save();
+    const user_one = new User(seed_users[0]).save();
+    const user_two = new User(seed_users[1]).save();
 
-    return Promise.all([userOne, userTwo]);
+    return Promise.all([user_one, user_two]);
   }).then(() => done());
 };
 
 module.exports = {
-  seedUsers,
-  populateUsers,
+  seed_users,
+  populate_users,
 };

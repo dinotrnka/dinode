@@ -5,8 +5,8 @@ const expect = require('expect');
 const { app } = require('./../server');
 const { User } = require('../models/user');
 const {
-  seedUsers,
-  populateUsers,
+  seed_users,
+  populate_users,
 } = require('./seed/users');
 
 const URL_API = '/api/v1';
@@ -16,7 +16,7 @@ const URL_LOGOUT = '/users/logout';
 const URL_REFRESH_TOKEN = '/users/refresh_token';
 const URL_CHANGE_PASSWORD = '/users/change_password';
 
-beforeEach(populateUsers);
+beforeEach(populate_users);
 
 describe(URL_USERS, () => {
   it('should create a user with valid email and password', (done) => {
@@ -109,7 +109,7 @@ describe(URL_USERS, () => {
 
         try {
           const users = await User.find();
-          expect(users.length).toBe(seedUsers.length);
+          expect(users.length).toBe(seed_users.length);
           done();
         } catch (e) {
           done(e);
@@ -134,7 +134,7 @@ describe(URL_USERS, () => {
 
         try {
           const users = await User.find();
-          expect(users.length).toBe(seedUsers.length);
+          expect(users.length).toBe(seed_users.length);
           done();
         } catch (e) {
           done(e);
@@ -159,7 +159,7 @@ describe(URL_USERS, () => {
         }
         try {
           const users = await User.find();
-          expect(users.length).toBe(seedUsers.length);
+          expect(users.length).toBe(seed_users.length);
           done();
         } catch (e) {
           done(e);
@@ -185,7 +185,7 @@ describe(URL_USERS, () => {
 
         try {
           const users = await User.find();
-          expect(users.length).toBe(seedUsers.length);
+          expect(users.length).toBe(seed_users.length);
           done();
         } catch (e) {
           done(e);
@@ -212,7 +212,7 @@ describe(URL_USERS, () => {
 
         try {
           const users = await User.find();
-          expect(users.length).toBe(seedUsers.length);
+          expect(users.length).toBe(seed_users.length);
           done();
         } catch (e) {
           done(e);
@@ -225,7 +225,7 @@ describe(URL_LOGOUT, () => {
   it('should remove access token on logout', (done) => {
     request(app)
       .post(URL_API + URL_LOGOUT)
-      .set('access_token', seedUsers[0].tokens[0].token)
+      .set('access_token', seed_users[0].tokens[0].token)
       .expect(200)
       .expect((res) => {
         expect(res.body.success).toBe('Logged out');
@@ -236,7 +236,7 @@ describe(URL_LOGOUT, () => {
         }
 
         try {
-          const user = await User.findById(seedUsers[0]._id);
+          const user = await User.findById(seed_users[0]._id);
           expect(user.tokens.length).toBe(1); // Refresh token remains active
           done();
         } catch (e) {
@@ -248,7 +248,7 @@ describe(URL_LOGOUT, () => {
 
 describe(URL_LOGIN, () => {
   it('should log in user with correct credentials and receive tokens', (done) => {
-    const { _id, email, password } = seedUsers[0];
+    const { _id, email, password } = seed_users[0];
 
     request(app)
       .post(URL_API + URL_LOGIN)
@@ -337,7 +337,7 @@ describe(URL_LOGIN, () => {
   });
 
   it('should not log in user if password is incorrect', (done) => {
-    const { email } = seedUsers[0];
+    const { email } = seed_users[0];
     const password = 'obviouslywrongpassword';
 
     request(app)
@@ -358,7 +358,7 @@ describe(URL_LOGIN, () => {
 
 describe(URL_REFRESH_TOKEN, () => {
   it('should refresh token with correct refresh token value', (done) => {
-    const refresh_token = seedUsers[0].tokens[1].token;
+    const refresh_token = seed_users[0].tokens[1].token;
 
     request(app)
       .post(URL_API + URL_REFRESH_TOKEN)
@@ -380,6 +380,7 @@ describe(URL_REFRESH_TOKEN, () => {
             type: 'access',
             token: res.body.access_token,
           });
+
           expect(user.toObject().tokens[2]).toMatchObject({
             type: 'refresh',
             token: res.body.refresh_token,
@@ -443,7 +444,7 @@ describe(URL_REFRESH_TOKEN, () => {
   });
 
   it('should not refresh token with access token', (done) => {
-    const refresh_token = seedUsers[0].tokens[0].token;
+    const refresh_token = seed_users[0].tokens[0].token;
     request(app)
       .post(URL_API + URL_REFRESH_TOKEN)
       .send({ refresh_token })
@@ -467,7 +468,7 @@ describe(URL_CHANGE_PASSWORD, () => {
 
     request(app)
       .post(URL_API + URL_CHANGE_PASSWORD)
-      .set('access_token', seedUsers[0].tokens[0].token)
+      .set('access_token', seed_users[0].tokens[0].token)
       .send({ old_password, new_password })
       .expect(200)
       .expect((res) => {
@@ -478,7 +479,7 @@ describe(URL_CHANGE_PASSWORD, () => {
           return done(err);
         }
         try {
-          const user = await User.findById(seedUsers[0]._id);
+          const user = await User.findById(seed_users[0]._id);
           const passwordIsCorrect = await user.checkPassword(new_password);
           expect(passwordIsCorrect).toBeTruthy();
           expect(user.tokens).toHaveLength(0);
@@ -494,7 +495,7 @@ describe(URL_CHANGE_PASSWORD, () => {
 
     request(app)
       .post(URL_API + URL_CHANGE_PASSWORD)
-      .set('access_token', seedUsers[0].tokens[0].token)
+      .set('access_token', seed_users[0].tokens[0].token)
       .send({ new_password })
       .expect(400)
       .expect((res) => {
@@ -513,7 +514,7 @@ describe(URL_CHANGE_PASSWORD, () => {
 
     request(app)
       .post(URL_API + URL_CHANGE_PASSWORD)
-      .set('access_token', seedUsers[0].tokens[0].token)
+      .set('access_token', seed_users[0].tokens[0].token)
       .send({ old_password })
       .expect(400)
       .expect((res) => {
@@ -533,7 +534,7 @@ describe(URL_CHANGE_PASSWORD, () => {
 
     request(app)
       .post(URL_API + URL_CHANGE_PASSWORD)
-      .set('access_token', seedUsers[0].tokens[0].token)
+      .set('access_token', seed_users[0].tokens[0].token)
       .send({ old_password, new_password })
       .expect(400)
       .expect((res) => {
@@ -572,7 +573,7 @@ describe(URL_CHANGE_PASSWORD, () => {
 
     request(app)
       .post(URL_API + URL_CHANGE_PASSWORD)
-      .set('access_token', seedUsers[0].tokens[0].token)
+      .set('access_token', seed_users[0].tokens[0].token)
       .send({ old_password, new_password })
       .expect(400)
       .expect((res) => {

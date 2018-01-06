@@ -1,5 +1,5 @@
 const express = require('express');
-const _ = require('lodash');
+const _ = require('lodash'); // eslint-disable-line more-naming-conventions/snake-case-variables
 const { check, validationResult } = require('express-validator/check');
 
 const { authenticate } = require('../middleware/authenticate');

@@ -30,19 +30,19 @@ const UserSchema = new mongoose.Schema({
 
 UserSchema.methods.generateToken = function (type) {
   const user = this;
-  let expiresIn = 0;
+  let lifetime = 0;
 
   if (type === 'access') {
-    expiresIn = ACCESS_TOKEN_LIFETIME;
+    lifetime = ACCESS_TOKEN_LIFETIME;
   } else if (type === 'refresh') {
-    expiresIn = REFRESH_TOKEN_LIFETIME;
+    lifetime = REFRESH_TOKEN_LIFETIME;
   } else {
     throw new Error();
   }
 
   const secret = process.env.JWT_SECRET;
-  const userId = user._id.toHexString();
-  const token = jwt.sign({ userId }, secret, { expiresIn }).toString();
+  const user_id = user._id.toHexString();
+  const token = jwt.sign({ user_id }, secret, { expiresIn: lifetime }).toString();
 
   user.tokens.push({ type, token });
   return user.save().then(() => token);
@@ -81,14 +81,14 @@ UserSchema.statics.findByToken = async function (type, token) {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
     return User.findOne({
-      _id: decoded.userId,
+      _id: decoded.user_id,
       tokens: { $elemMatch: { type, token } },
     });
   } catch (e) {
     if (e.name === 'TokenExpiredError') {
       // Remove expired token from collection
-      const { userId } = jwt.decode(token);
-      const user = await User.findById(userId);
+      const { user_id } = jwt.decode(token);
+      const user = await User.findById(user_id);
       if (user) {
         await user.removeToken(type, token);
       }

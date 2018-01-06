@@ -1,30 +1,31 @@
 const { ObjectID } = require('mongodb');
 
 const { Note } = require('../../models/note');
-const { seedUsers } = require('./users');
+const { seed_users } = require('./users');
 
-const noteOneId = new ObjectID();
-const noteTwoId = new ObjectID();
-const seedNotes = [{
-  _id: noteOneId,
-  _owner: seedUsers[0]._id,
+const note_one_id = new ObjectID();
+const note_two_id = new ObjectID();
+
+const seed_notes = [{
+  _id: note_one_id,
+  _owner: seed_users[0]._id,
   text: 'Dinaga is king',
 }, {
-  _id: noteTwoId,
-  _owner: seedUsers[1]._id,
+  _id: note_two_id,
+  _owner: seed_users[1]._id,
   text: 'Kazumaaaa Kiryu chaaaan!',
 }];
 
-const populateNotes = (done) => {
+const populate_notes = (done) => {
   Note.remove({}).then(() => {
-    const noteOne = new Note(seedNotes[0]).save();
-    const noteTwo = new Note(seedNotes[1]).save();
+    const note_one = new Note(seed_notes[0]).save();
+    const note_two = new Note(seed_notes[1]).save();
 
-    return Promise.all([noteOne, noteTwo]);
+    return Promise.all([note_one, note_two]);
   }).then(() => done());
 };
 
 module.exports = {
-  seedNotes,
-  populateNotes,
+  seed_notes,
+  populate_notes,
 };

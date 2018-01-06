@@ -5,14 +5,14 @@ const expect = require('expect');
 const { app } = require('./../server');
 const { Note } = require('../models/note');
 const { User } = require('../models/user');
-const { seedUsers, populateUsers } = require('./seed/users');
-const { seedNotes, populateNotes } = require('./seed/notes');
+const { seed_users, populate_users } = require('./seed/users');
+const { seed_notes, populate_notes } = require('./seed/notes');
 
 const URL_API = '/api/v1';
 const URL_NOTES = '/notes';
 
-beforeEach(populateUsers);
-beforeEach(populateNotes);
+beforeEach(populate_users);
+beforeEach(populate_notes);
 
 describe(URL_NOTES, () => {
   it('should create a note', (done) => {
@@ -20,7 +20,7 @@ describe(URL_NOTES, () => {
 
     request(app)
       .post(URL_API + URL_NOTES)
-      .set('access_token', seedUsers[0].tokens[0].token)
+      .set('access_token', seed_users[0].tokens[0].token)
       .send({ text })
       .expect(200)
       .end(async (err) => {
@@ -41,7 +41,7 @@ describe(URL_NOTES, () => {
   it('should not create a note without text', (done) => {
     request(app)
       .post(URL_API + URL_NOTES)
-      .set('access_token', seedUsers[0].tokens[0].token)
+      .set('access_token', seed_users[0].tokens[0].token)
       .expect(400)
       .expect((res) => {
         expect(res.body.error).toBe('Text is required');
@@ -53,7 +53,7 @@ describe(URL_NOTES, () => {
 
         try {
           const notes = await Note.find({});
-          expect(notes.length).toBe(seedNotes.length);
+          expect(notes.length).toBe(seed_notes.length);
           done();
         } catch (e) {
           done(e);
@@ -75,7 +75,7 @@ describe(URL_NOTES, () => {
   it('should not create a note with refresh token', (done) => {
     request(app)
       .post(URL_API + URL_NOTES)
-      .set('access_token', seedUsers[0].tokens[1].token)
+      .set('access_token', seed_users[0].tokens[1].token)
       .expect(401)
       .expect((res) => {
         expect(res.body.error).toBe('Invalid access token');
@@ -86,7 +86,7 @@ describe(URL_NOTES, () => {
   it('should not create a note if token expired but logout instead', (done) => {
     request(app)
       .post(URL_API + URL_NOTES)
-      .set('access_token', seedUsers[1].tokens[0].token)
+      .set('access_token', seed_users[1].tokens[0].token)
       .expect(401)
       .expect((res) => {
         expect(res.body.error).toBe('Invalid access token');
@@ -97,7 +97,7 @@ describe(URL_NOTES, () => {
         }
 
         try {
-          const user = await User.findById(seedUsers[1]._id);
+          const user = await User.findById(seed_users[1]._id);
           expect(user.tokens.length).toBe(1); // Refresh token remains active
           done();
         } catch (e) {

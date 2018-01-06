@@ -1,11 +1,15 @@
 {
   "parser": "babel-eslint",
   "extends": "airbnb",
+  "plugins": [
+    "more-naming-conventions"
+  ],
 	"rules": {
     "func-names": 0,
     "consistent-return": 0,
     "newline-per-chained-call": 0,
     "no-underscore-dangle": 0,
-    "camelcase": 0
+    "camelcase": 0,
+    "more-naming-conventions/snake-case-variables": 2
 	}
 }
