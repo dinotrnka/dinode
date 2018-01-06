@@ -16,7 +16,7 @@ const seed_notes = [{
   text: 'Kazumaaaa Kiryu chaaaan!',
 }];
 
-const populate_notes = (done) => {
+function populateNotes(done) {
   Note.remove({}).then(() => {
     const note_one = new Note(seed_notes[0]).save();
     const note_two = new Note(seed_notes[1]).save();
@@ -27,5 +27,5 @@ const populate_notes = (done) => {
 
 module.exports = {
   seed_notes,
-  populate_notes,
+  populateNotes,
 };

@@ -5,14 +5,14 @@ const expect = require('expect');
 const { app } = require('./../server');
 const { Note } = require('../models/note');
 const { User } = require('../models/user');
-const { seed_users, populate_users } = require('./seed/users');
-const { seed_notes, populate_notes } = require('./seed/notes');
+const { seed_users, populateUsers } = require('./seed/users');
+const { seed_notes, populateNotes } = require('./seed/notes');
 
 const URL_API = '/api/v1';
 const URL_NOTES = '/notes';
 
-beforeEach(populate_users);
-beforeEach(populate_notes);
+beforeEach(populateUsers);
+beforeEach(populateNotes);
 
 describe(URL_NOTES, () => {
   it('should create a note', (done) => {

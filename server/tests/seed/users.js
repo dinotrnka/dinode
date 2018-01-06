@@ -59,16 +59,16 @@ const seed_users = [{
   tokens: [user_two_access_token, user_two_refresh_token],
 }];
 
-const populate_users = (done) => {
+function populateUsers(done) {
   User.remove({}).then(() => {
     const user_one = new User(seed_users[0]).save();
     const user_two = new User(seed_users[1]).save();
 
     return Promise.all([user_one, user_two]);
   }).then(() => done());
-};
+}
 
 module.exports = {
   seed_users,
-  populate_users,
+  populateUsers,
 };
