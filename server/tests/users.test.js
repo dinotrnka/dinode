@@ -6,7 +6,7 @@ const { app } = require('./../server');
 const { User } = require('../models/user');
 const {
   seed_users,
-  populate_users,
+  populateUsers,
 } = require('./seed/users');
 
 const URL_API = '/api/v1';
@@ -16,7 +16,7 @@ const URL_LOGOUT = '/users/logout';
 const URL_REFRESH_TOKEN = '/users/refresh_token';
 const URL_CHANGE_PASSWORD = '/users/change_password';
 
-beforeEach(populate_users);
+beforeEach(populateUsers);
 
 describe(URL_USERS, () => {
   it('should create a user with valid email and password', (done) => {

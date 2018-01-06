@@ -4,6 +4,7 @@ const jwt = require('jsonwebtoken');
 const { check, validationResult } = require('express-validator/check');
 
 const { User } = require('../models/user');
+const { Activation } = require('../models/activation');
 const { authenticate } = require('../middleware/authenticate');
 
 const app = express();
@@ -30,12 +31,16 @@ app.post('/', [
     }
 
     const body = _.pick(req.body, ['email', 'password']);
+
     const user = new User({
       email: body.email.toLowerCase(),
       password: body.password,
     });
-
     await user.save();
+
+    const activation = new Activation({ _owner: user._id });
+    await activation.save();
+
     res.send({ success: 'Registration successful' });
   } catch (e) {
     res.status(400).send({ error: 'Error while creating user' });

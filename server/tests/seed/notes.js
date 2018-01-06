@@ -23,7 +23,7 @@ function populateNotes(done) {
 
     return Promise.all([note_one, note_two]);
   }).then(() => done());
-};
+}
 
 module.exports = {
   seed_notes,
