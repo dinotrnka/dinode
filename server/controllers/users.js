@@ -47,6 +47,18 @@ app.post('/', [
   }
 });
 
+app.get('/activate/:code', async (req, res) => {
+  const { code } = req.params;
+
+  const activation = await Activation.findOne({ code });
+  if (activation) {
+    await activation.remove();
+    return res.status(200).send({ success: 'Account successfully activated' });
+  }
+
+  return res.status(400).send({ error: 'Invalid activation code' });
+});
+
 app.post('/login', [
   check('email')
     .trim()
@@ -66,7 +78,7 @@ app.post('/login', [
 
     const user_is_activated = await user.isActivated();
     if (!user_is_activated) {
-      return res.status(400).send({ error: 'User not activated' });
+      return res.status(400).send({ error: 'Account not activated' });
     }
 
     const access_token = await user.generateToken('access');
