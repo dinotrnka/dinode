@@ -4,10 +4,14 @@ const expect = require('expect');
 
 const { app } = require('./../server');
 const { User } = require('../models/user');
+const { Activation } = require('../models/activation');
 const {
   seed_users,
   populateUsers,
 } = require('./seed/users');
+const {
+  populateActivations,
+} = require('./seed/activations');
 
 const URL_API = '/api/v1';
 const URL_USERS = '/users';
@@ -17,9 +21,10 @@ const URL_REFRESH_TOKEN = '/users/refresh_token';
 const URL_CHANGE_PASSWORD = '/users/change_password';
 
 beforeEach(populateUsers);
+beforeEach(populateActivations);
 
 describe(URL_USERS, () => {
-  it('should create a user with valid email and password', (done) => {
+  it('should create a user with valid email and password and create activation key', (done) => {
     const email = 'testuser@gmail.com';
     const password = 'password';
 
@@ -39,6 +44,10 @@ describe(URL_USERS, () => {
           const users = await User.find({ email });
           expect(users.length).toBe(1);
           expect(users[0].email).toBe(email);
+
+          const activations = await Activation.find({ _owner: users[0]._id });
+          expect(activations.length).toBe(1);
+
           done();
         } catch (e) {
           done(e);
