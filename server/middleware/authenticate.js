@@ -1,9 +1,10 @@
 const { User } = require('../models/user');
 
-const authenticate = (req, res, next) => {
+const authenticate = async (req, res, next) => {
   const token = req.header('access_token');
 
-  User.findByToken('access', token).then((user) => {
+  try {
+    const user = await User.findByToken('access', token);
     if (!user) {
       return res.status(401).send({ error: 'Invalid access token' });
     }
@@ -11,9 +12,9 @@ const authenticate = (req, res, next) => {
     req.user = user;
     req.token = token;
     next();
-  }).catch((e) => {
+  } catch (e) {
     res.status(401).send({ error: e.message });
-  });
+  }
 };
 
 module.exports = { authenticate };

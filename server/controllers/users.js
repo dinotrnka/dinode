@@ -64,6 +64,11 @@ app.post('/login', [
     const body = _.pick(req.body, ['email', 'password']);
     const user = await User.findByCredentials(body.email, body.password);
 
+    const user_is_activated = await user.isActivated();
+    if (!user_is_activated) {
+      return res.status(400).send({ error: 'User not activated' });
+    }
+
     const access_token = await user.generateToken('access');
     const refresh_token = await user.generateToken('refresh');
 

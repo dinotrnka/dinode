@@ -1,6 +1,8 @@
 const mongoose = require('mongoose');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
+
+const { Activation } = require('./activation');
 const { ACCESS_TOKEN_LIFETIME, REFRESH_TOKEN_LIFETIME } = require('../config/constants');
 
 const UserSchema = new mongoose.Schema({
@@ -71,6 +73,15 @@ UserSchema.methods.checkPassword = function (password) {
     bcrypt.compare(password, user.password, (err, res) => {
       resolve(res); // returns true or false
     });
+  });
+};
+
+UserSchema.methods.isActivated = async function () {
+  const user = this;
+
+  const activations = await Activation.find({ _owner: user._id });
+  return new Promise((resolve) => {
+    resolve(activations.length === 0);
   });
 };
 
