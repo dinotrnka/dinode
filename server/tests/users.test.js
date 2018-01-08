@@ -10,11 +10,13 @@ const {
   populateUsers,
 } = require('./seed/users');
 const {
+  seed_activations,
   populateActivations,
 } = require('./seed/activations');
 
 const URL_API = '/api/v1';
 const URL_USERS = '/users';
+const URL_ACTIVATE = '/users/activate';
 const URL_LOGIN = '/users/login';
 const URL_LOGOUT = '/users/logout';
 const URL_REFRESH_TOKEN = '/users/refresh_token';
@@ -230,6 +232,55 @@ describe(URL_USERS, () => {
   });
 });
 
+describe(URL_ACTIVATE, () => {
+  it('should activate user with valid activation code', (done) => {
+    const ACTIVATION_CODE = `/${seed_activations[0].code}`;
+
+    request(app)
+      .get(URL_API + URL_ACTIVATE + ACTIVATION_CODE)
+      .expect(200)
+      .expect((res) => {
+        expect(res.body.success).toBe('Account successfully activated');
+      })
+      .end(async (err) => {
+        if (err) {
+          return done(err);
+        }
+
+        try {
+          const activations = await Activation.find({ _id: seed_activations[0]._id });
+          // Check if activation document is deleted after successful activation
+          expect(activations.length).toBe(0);
+          done();
+        } catch (e) {
+          done(e);
+        }
+      });
+  });
+
+  it('should not activate user with invalid activation code', (done) => {
+    const ACTIVATION_CODE = '/oppagangnamstyle';
+
+    request(app)
+      .get(URL_API + URL_ACTIVATE + ACTIVATION_CODE)
+      .expect(400)
+      .expect((res) => {
+        expect(res.body.error).toBe('Invalid activation code');
+      })
+      .end(async (err) => {
+        if (err) {
+          return done(err);
+        }
+
+        try {
+          done();
+        } catch (e) {
+          done(e);
+        }
+      });
+  });
+});
+
 describe(URL_LOGOUT, () => {
   it('should remove access token on logout', (done) => {
     request(app)
@@ -287,6 +338,24 @@ describe(URL_LOGIN, () => {
         } catch (e) {
           done(e);
         }
+      });
+  });
+
+  it('should not log in user that has not been activated', (done) => {
+    const { email, password } = seed_users[2];
+
+    request(app)
+      .post(URL_API + URL_LOGIN)
+      .send({ email, password })
+      .expect(400)
+      .expect((res) => {
+        expect(res.body.error).toBe('Account not activated');
+      })
+      .end((err) => {
+        if (err) {
+          return done(err);
+        }
+        done();
       });
   });
 
@@ -489,8 +558,8 @@ describe(URL_CHANGE_PASSWORD, () => {
         }
         try {
           const user = await User.findById(seed_users[0]._id);
-          const passwordIsCorrect = await user.checkPassword(new_password);
-          expect(passwordIsCorrect).toBeTruthy();
+          const password_is_correct = await user.checkPassword(new_password);
+          expect(password_is_correct).toBeTruthy();
           expect(user.tokens).toHaveLength(0);
           done();
         } catch (e) {
