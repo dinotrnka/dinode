@@ -38,6 +38,7 @@ app.post('/', [
     });
     await user.save();
 
+    // Registration automatically triggers sending first activation code
     const activation = new Activation({ _owner: user._id });
     await activation.save();
 
@@ -45,6 +46,37 @@ app.post('/', [
   } catch (e) {
     res.status(400).send({ error: 'Error while creating user' });
   }
+});
+
+app.post('/send_activation_code', [
+  check('email')
+    .trim()
+    .exists().withMessage('Email is required')
+    .isEmail().withMessage('Enter a valid email address')
+    .custom(email => User.findOne({ email: email.toLowerCase() }).then((user) => {
+      if (!user) {
+        throw new Error(`User with email ${email} does not exist`);
+      }
+      return Promise.resolve;
+    })),
+], async (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).send({ error: errors.array()[0].msg });
+  }
+  const body = _.pick(req.body, ['email']);
+  const email = body.email.toLowerCase();
+  const user = await User.findOne({ email });
+
+  const activation = await Activation.findOne({ _owner: user._id });
+  if (!activation) {
+    return res.status(400).send({ error: `User with email ${email} is already activated` });
+  }
+
+  await Activation.remove({ _owner: user._id }); // Remove previous activation code
+  await new Activation({ _owner: user._id }).save();
+
+  res.send({ success: `Activation code sent to ${email}` });
 });
 
 app.get('/activate/:code', async (req, res) => {

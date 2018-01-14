@@ -16,6 +16,7 @@ const {
 
 const URL_API = '/api/v1';
 const URL_USERS = '/users';
+const URL_SEND_ACTIVATION_CODE = '/users/send_activation_code';
 const URL_ACTIVATE = '/users/activate';
 const URL_LOGIN = '/users/login';
 const URL_LOGOUT = '/users/logout';
@@ -228,6 +229,62 @@ describe(URL_USERS, () => {
         } catch (e) {
           done(e);
         }
+      });
+  });
+});
+
+describe(URL_SEND_ACTIVATION_CODE, () => {
+  it('should send activation code if user has registered but not activated yet', (done) => {
+    const email = 'unborn@gmail.com';
+
+    request(app)
+      .post(URL_API + URL_SEND_ACTIVATION_CODE)
+      .send({ email })
+      .expect(200)
+      .expect((res) => {
+        expect(res.body.success).toBe(`Activation code sent to ${email}`);
+      })
+      .end((err) => {
+        if (err) {
+          return done(err);
+        }
+        done();
+      });
+  });
+
+  it('should not send activation code if email not found', (done) => {
+    const email = 'tarzan@gmail.com';
+
+    request(app)
+      .post(URL_API + URL_SEND_ACTIVATION_CODE)
+      .send({ email })
+      .expect(400)
+      .expect((res) => {
+        expect(res.body.error).toBe(`User with email ${email} does not exist`);
+      })
+      .end((err) => {
+        if (err) {
+          return done(err);
+        }
+        done();
+      });
+  });
+
+  it('should not send activation code if user is already activated', (done) => {
+    const email = 'dinaga@gmail.com';
+
+    request(app)
+      .post(URL_API + URL_SEND_ACTIVATION_CODE)
+      .send({ email })
+      .expect(400)
+      .expect((res) => {
+        expect(res.body.error).toBe(`User with email ${email} is already activated`);
+      })
+      .end((err) => {
+        if (err) {
+          return done(err);
+        }
+        done();
       });
   });
 });
