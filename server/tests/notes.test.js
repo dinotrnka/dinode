@@ -24,9 +24,7 @@ describe(URL_NOTES, () => {
       .send({ text })
       .expect(200)
       .end(async (err) => {
-        if (err) {
-          return done(err);
-        }
+        if (err) return done(err);
 
         try {
           const notes = await Note.find({ text });
@@ -47,9 +45,7 @@ describe(URL_NOTES, () => {
         expect(res.body.error).toBe('Text is required');
       })
       .end(async (err) => {
-        if (err) {
-          return done(err);
-        }
+        if (err) return done(err);
 
         try {
           const notes = await Note.find({});
@@ -92,9 +88,7 @@ describe(URL_NOTES, () => {
         expect(res.body.error).toBe('Invalid access token');
       })
       .end(async (err) => {
-        if (err) {
-          return done(err);
-        }
+        if (err) return done(err);
 
         try {
           const user = await User.findById(seed_users[1]._id);

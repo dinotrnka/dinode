@@ -39,9 +39,7 @@ describe(URL_USERS, () => {
         expect(res.body.success).toBe('Registration successful');
       })
       .end(async (err) => {
-        if (err) {
-          return done(err);
-        }
+        if (err) return done(err);
 
         try {
           const users = await User.find({ email });
@@ -67,9 +65,7 @@ describe(URL_USERS, () => {
       .send({ email, password })
       .expect(200)
       .end(async (err) => {
-        if (err) {
-          return done(err);
-        }
+        if (err) return done(err);
 
         try {
           const users = await User.find({ email: email.toLowerCase() });
@@ -90,9 +86,7 @@ describe(URL_USERS, () => {
       .send({ email, password })
       .expect(200)
       .end(async (err) => {
-        if (err) {
-          return done(err);
-        }
+        if (err) return done(err);
 
         try {
           const users = await User.find({ email: email.trim() });
@@ -115,9 +109,7 @@ describe(URL_USERS, () => {
         expect(res.body.error).toBe('Email is required');
       })
       .end(async (err) => {
-        if (err) {
-          return done(err);
-        }
+        if (err) return done(err);
 
         try {
           const users = await User.find();
@@ -140,9 +132,7 @@ describe(URL_USERS, () => {
         expect(res.body.error).toBe('Password is required');
       })
       .end(async (err) => {
-        if (err) {
-          return done(err);
-        }
+        if (err) return done(err);
 
         try {
           const users = await User.find();
@@ -166,9 +156,8 @@ describe(URL_USERS, () => {
         expect(res.body.error).toBe('Enter a valid email address');
       })
       .end(async (err) => {
-        if (err) {
-          return done(err);
-        }
+        if (err) return done(err);
+
         try {
           const users = await User.find();
           expect(users.length).toBe(seed_users.length);
@@ -191,9 +180,7 @@ describe(URL_USERS, () => {
         expect(res.body.error).toBe(`User with email ${email} already exists`);
       })
       .end(async (err) => {
-        if (err) {
-          return done(err);
-        }
+        if (err) return done(err);
 
         try {
           const users = await User.find();
@@ -218,9 +205,7 @@ describe(URL_USERS, () => {
         expect(res.body.error).toBe('Password must be at least 5 characters long');
       })
       .end(async (err) => {
-        if (err) {
-          return done(err);
-        }
+        if (err) return done(err);
 
         try {
           const users = await User.find();
@@ -244,12 +229,7 @@ describe(URL_SEND_ACTIVATION_CODE, () => {
       .expect((res) => {
         expect(res.body.success).toBe(`Activation code sent to ${email}`);
       })
-      .end((err) => {
-        if (err) {
-          return done(err);
-        }
-        done();
-      });
+      .end(done);
   });
 
   it('should not send activation code if email not found', (done) => {
@@ -262,12 +242,7 @@ describe(URL_SEND_ACTIVATION_CODE, () => {
       .expect((res) => {
         expect(res.body.error).toBe(`User with email ${email} does not exist`);
       })
-      .end((err) => {
-        if (err) {
-          return done(err);
-        }
-        done();
-      });
+      .end(done);
   });
 
   it('should not send activation code if user is already activated', (done) => {
@@ -280,12 +255,7 @@ describe(URL_SEND_ACTIVATION_CODE, () => {
       .expect((res) => {
         expect(res.body.error).toBe(`User with email ${email} is already activated`);
       })
-      .end((err) => {
-        if (err) {
-          return done(err);
-        }
-        done();
-      });
+      .end(done);
   });
 });
 
@@ -300,9 +270,7 @@ describe(URL_ACTIVATE, () => {
         expect(res.body.success).toBe('Account successfully activated');
       })
       .end(async (err) => {
-        if (err) {
-          return done(err);
-        }
+        if (err) return done(err);
 
         try {
           const activations = await Activation.find({ _id: seed_activations[0]._id });
@@ -325,9 +293,7 @@ describe(URL_ACTIVATE, () => {
         expect(res.body.error).toBe('Invalid activation code');
       })
       .end(async (err) => {
-        if (err) {
-          return done(err);
-        }
+        if (err) return done(err);
 
         try {
           done();
@@ -348,9 +314,7 @@ describe(URL_LOGOUT, () => {
         expect(res.body.success).toBe('Logged out');
       })
       .end(async (err) => {
-        if (err) {
-          return done(err);
-        }
+        if (err) return done(err);
 
         try {
           const user = await User.findById(seed_users[0]._id);
@@ -377,9 +341,7 @@ describe(URL_LOGIN, () => {
         expect(res.body).toHaveProperty('expires');
       })
       .end(async (err, res) => {
-        if (err) {
-          return done(err);
-        }
+        if (err) return done(err);
 
         try {
           const user = await User.findById(_id);
@@ -408,12 +370,7 @@ describe(URL_LOGIN, () => {
       .expect((res) => {
         expect(res.body.error).toBe('Account not activated');
       })
-      .end((err) => {
-        if (err) {
-          return done(err);
-        }
-        done();
-      });
+      .end(done);
   });
 
   it('should not log in user with no email', (done) => {
@@ -426,12 +383,7 @@ describe(URL_LOGIN, () => {
       .expect((res) => {
         expect(res.body.error).toBe('Email is required');
       })
-      .end((err) => {
-        if (err) {
-          return done(err);
-        }
-        done();
-      });
+      .end(done);
   });
 
   it('should not log in user with no password', (done) => {
@@ -444,12 +396,7 @@ describe(URL_LOGIN, () => {
       .expect((res) => {
         expect(res.body.error).toBe('Password is required');
       })
-      .end((err) => {
-        if (err) {
-          return done(err);
-        }
-        done();
-      });
+      .end(done);
   });
 
   it('should not log in user if email does not exist', (done) => {
@@ -463,12 +410,7 @@ describe(URL_LOGIN, () => {
       .expect((res) => {
         expect(res.body.error).toBe('Invalid credentials');
       })
-      .end((err) => {
-        if (err) {
-          return done(err);
-        }
-        done();
-      });
+      .end(done);
   });
 
   it('should not log in user if password is incorrect', (done) => {
@@ -482,12 +424,7 @@ describe(URL_LOGIN, () => {
       .expect((res) => {
         expect(res.body.error).toBe('Invalid credentials');
       })
-      .end((err) => {
-        if (err) {
-          return done(err);
-        }
-        done();
-      });
+      .end(done);
   });
 });
 
@@ -505,9 +442,7 @@ describe(URL_REFRESH_TOKEN, () => {
         expect(res.body).toHaveProperty('expires');
       })
       .end(async (err, res) => {
-        if (err) {
-          return done(err);
-        }
+        if (err) return done(err);
 
         try {
           const user = await User.findByToken('refresh', res.body.refresh_token);
@@ -535,9 +470,7 @@ describe(URL_REFRESH_TOKEN, () => {
         expect(res.body.error).toBe('Refresh token is required');
       })
       .end((err) => {
-        if (err) {
-          return done(err);
-        }
+        if (err) return done(err);
         done();
       });
   });
@@ -571,9 +504,7 @@ describe(URL_REFRESH_TOKEN, () => {
         expect(res.body.error).toBe('Invalid refresh token');
       })
       .end((err) => {
-        if (err) {
-          return done(err);
-        }
+        if (err) return done(err);
         done();
       });
   });
@@ -588,9 +519,7 @@ describe(URL_REFRESH_TOKEN, () => {
         expect(res.body.error).toBe('Invalid refresh token');
       })
       .end((err) => {
-        if (err) {
-          return done(err);
-        }
+        if (err) return done(err);
         done();
       });
   });
@@ -610,9 +539,7 @@ describe(URL_CHANGE_PASSWORD, () => {
         expect(res.body.success).toBe('Password successfully changed');
       })
       .end(async (err) => {
-        if (err) {
-          return done(err);
-        }
+        if (err) return done(err);
         try {
           const user = await User.findById(seed_users[0]._id);
           const password_is_correct = await user.checkPassword(new_password);
@@ -636,12 +563,7 @@ describe(URL_CHANGE_PASSWORD, () => {
       .expect((res) => {
         expect(res.body.error).toBe('Old password is required');
       })
-      .end(async (err) => {
-        if (err) {
-          return done(err);
-        }
-        done();
-      });
+      .end(done);
   });
 
   it('should not change password if new password is not provided', (done) => {
@@ -655,12 +577,7 @@ describe(URL_CHANGE_PASSWORD, () => {
       .expect((res) => {
         expect(res.body.error).toBe('New password is required');
       })
-      .end(async (err) => {
-        if (err) {
-          return done(err);
-        }
-        done();
-      });
+      .end(done);
   });
 
   it('should not change password if new password has less than 5 characters', (done) => {
@@ -675,12 +592,7 @@ describe(URL_CHANGE_PASSWORD, () => {
       .expect((res) => {
         expect(res.body.error).toBe('Password must be at least 5 characters long');
       })
-      .end(async (err) => {
-        if (err) {
-          return done(err);
-        }
-        done();
-      });
+      .end(done);
   });
 
   it('should not change password if access token is invalid', (done) => {
@@ -694,12 +606,7 @@ describe(URL_CHANGE_PASSWORD, () => {
       .expect((res) => {
         expect(res.body.error).toBe('Invalid access token');
       })
-      .end(async (err) => {
-        if (err) {
-          return done(err);
-        }
-        done();
-      });
+      .end(done);
   });
 
   it('should not change password if old password is incorrect', (done) => {
@@ -714,11 +621,6 @@ describe(URL_CHANGE_PASSWORD, () => {
       .expect((res) => {
         expect(res.body.error).toBe('Incorrect old password');
       })
-      .end(async (err) => {
-        if (err) {
-          return done(err);
-        }
-        done();
-      });
+      .end(done);
   });
 });
