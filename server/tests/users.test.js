@@ -469,10 +469,7 @@ describe(URL_REFRESH_TOKEN, () => {
       .expect((res) => {
         expect(res.body.error).toBe('Refresh token is required');
       })
-      .end((err) => {
-        if (err) return done(err);
-        done();
-      });
+      .end(done);
   });
 
   it('should not refresh token if refresh token is invalid', (done) => {
@@ -485,12 +482,7 @@ describe(URL_REFRESH_TOKEN, () => {
       .expect((res) => {
         expect(res.body.error).toBe('Invalid refresh token');
       })
-      .end((err) => {
-        if (err) {
-          return done(err);
-        }
-        done();
-      });
+      .end(done);
   });
 
   it('should not refresh token if refresh token expired', (done) => {
@@ -503,10 +495,7 @@ describe(URL_REFRESH_TOKEN, () => {
       .expect((res) => {
         expect(res.body.error).toBe('Invalid refresh token');
       })
-      .end((err) => {
-        if (err) return done(err);
-        done();
-      });
+      .end(done);
   });
 
   it('should not refresh token with access token', (done) => {
@@ -518,10 +507,7 @@ describe(URL_REFRESH_TOKEN, () => {
       .expect((res) => {
         expect(res.body.error).toBe('Invalid refresh token');
       })
-      .end((err) => {
-        if (err) return done(err);
-        done();
-      });
+      .end(done);
   });
 });
 
