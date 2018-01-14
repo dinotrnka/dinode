@@ -119,7 +119,7 @@ app.post('/refresh_token', [
 
     res.send({ access_token, refresh_token, expires: decoded.exp });
   } catch (e) {
-    res.status(400).send({ error: 'Invalid credentials' });
+    res.status(400).send({ error: 'Invalid refresh token' });
   }
 });
 

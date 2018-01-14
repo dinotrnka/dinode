@@ -493,7 +493,7 @@ describe(URL_REFRESH_TOKEN, () => {
       .send({ refresh_token })
       .expect(400)
       .expect((res) => {
-        expect(res.body.error).toBe('Invalid credentials');
+        expect(res.body.error).toBe('Invalid refresh token');
       })
       .end((err) => {
         if (err) {
@@ -503,13 +503,13 @@ describe(URL_REFRESH_TOKEN, () => {
       });
   });
 
-  it('should not refresh token if refresh token does not exist', (done) => {
+  it('should not refresh token if refresh token expired', (done) => {
     const refresh_token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI1YTRlNGZiYWVjZThmNjU0YzM2NWE2MDAiLCJpYXQiOjE1MTUxMDUyNjAsImV4cCI6MTUxNTcxMDA2MH0.QOxwVuPq-bYxm-f5bbbYF74DFOIVgWTHl_QAfDYPJbk';
 
     request(app)
       .post(URL_API + URL_REFRESH_TOKEN)
       .send({ refresh_token })
-      .expect(401)
+      .expect(400)
       .expect((res) => {
         expect(res.body.error).toBe('Invalid refresh token');
       })
