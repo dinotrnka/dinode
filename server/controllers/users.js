@@ -84,8 +84,12 @@ app.get('/activate/:code', async (req, res) => {
 
   const activation = await Activation.findOne({ code });
   if (activation) {
-    await activation.remove();
-    return res.status(200).send({ success: 'Account successfully activated' });
+    if (await activation.isValid()) {
+      await activation.remove();
+      return res.status(200).send({ success: 'Account successfully activated' });
+    }
+
+    return res.status(400).send({ error: 'Activation code expired' });
   }
 
   return res.status(400).send({ error: 'Invalid activation code' });

@@ -7,6 +7,7 @@ const { ACCESS_TOKEN_LIFETIME, REFRESH_TOKEN_LIFETIME } = require('../../config/
 const user_0_id = new ObjectID();
 const user_1_id = new ObjectID();
 const user_2_id = new ObjectID();
+const user_3_id = new ObjectID();
 
 const user_0_access_token = {
   type: 'access',
@@ -59,15 +60,21 @@ const seed_users = [{
   email: 'unborn@gmail.com',
   password: 'unborn123',
   tokens: [],
+}, {
+  _id: user_3_id,
+  email: 'boneless@gmail.com',
+  password: 'boneless123',
+  tokens: [],
 }];
 
 function populateUsers(done) {
   User.remove({}).then(() => {
     const user_0 = new User(seed_users[0]).save(); // Activated and logged in, valid session
     const user_1 = new User(seed_users[1]).save(); // Activated and logged in, session expired
-    const user_2 = new User(seed_users[2]).save(); // Not activated yet
+    const user_2 = new User(seed_users[2]).save(); // Not activated yet, activation code valid
+    const user_3 = new User(seed_users[3]).save(); // Not activated yet, activation code expired
 
-    return Promise.all([user_0, user_1, user_2]);
+    return Promise.all([user_0, user_1, user_2, user_3]);
   }).then(() => done());
 }
 

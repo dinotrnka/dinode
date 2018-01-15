@@ -283,6 +283,18 @@ describe(URL_ACTIVATE, () => {
       });
   });
 
+  it('should not activate user with expired activation code', (done) => {
+    const ACTIVATION_CODE = `/${seed_activations[1].code}`;
+
+    request(app)
+      .get(URL_API + URL_ACTIVATE + ACTIVATION_CODE)
+      .expect(400)
+      .expect((res) => {
+        expect(res.body.error).toBe('Activation code expired');
+      })
+      .end(done);
+  });
+
   it('should not activate user with invalid activation code', (done) => {
     const ACTIVATION_CODE = '/oppagangnamstyle';
 
@@ -292,15 +304,7 @@ describe(URL_ACTIVATE, () => {
       .expect((res) => {
         expect(res.body.error).toBe('Invalid activation code');
       })
-      .end(async (err) => {
-        if (err) return done(err);
-
-        try {
-          done();
-        } catch (e) {
-          done(e);
-        }
-      });
+      .end(done);
   });
 });
 
