@@ -192,7 +192,6 @@ describe(URL_USERS, () => {
       });
   });
 
-
   it('should not create a user if password has less than 5 characters', (done) => {
     const email = 'some@email.com';
     const password = 'wtf';

@@ -21,7 +21,8 @@
     "jsonwebtoken": "^8.1.0",
     "lodash": "^4.17.4",
     "mongodb": "^3.0.0-rc0",
-    "mongoose": "^4.13.6"
+    "mongoose": "^4.13.6",
+    "nodemailer": "^4.4.1"
   },
   "devDependencies": {
     "babel-eslint": "^8.0.3",

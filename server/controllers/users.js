@@ -39,8 +39,8 @@ app.post('/', [
     await user.save();
 
     // Registration automatically triggers sending first activation code
-    const activation = new Activation({ _owner: user._id });
-    await activation.save();
+    const activation = await new Activation({ _owner: user._id }).save();
+    activation.sendEmail(); // Not waiting, email is sent asynchronously
 
     res.send({ success: 'Registration successful' });
   } catch (e) {
@@ -74,7 +74,8 @@ app.post('/send_activation_code', [
   }
 
   await Activation.remove({ _owner: user._id }); // Remove previous activation code
-  await new Activation({ _owner: user._id }).save();
+  const new_activation = await new Activation({ _owner: user._id }).save();
+  new_activation.sendEmail(); // Not waiting, email is sent asynchronously
 
   res.send({ success: `Activation code sent to ${email}` });
 });
@@ -112,8 +113,8 @@ app.post('/login', [
     const body = _.pick(req.body, ['email', 'password']);
     const user = await User.findByCredentials(body.email.toLowerCase(), body.password);
 
-    const user_is_activated = await user.isActivated();
-    if (!user_is_activated) {
+    const pending_activation = await Activation.findOne({ _owner: user._id });
+    if (pending_activation !== null) {
       return res.status(400).send({ error: 'Account not activated' });
     }
 
