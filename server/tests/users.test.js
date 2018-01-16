@@ -17,8 +17,8 @@ const {
 const URL_API = '/api/v1';
 const URL_USERS = '/users';
 const URL_SEND_ACTIVATION_CODE = '/users/send_activation_code';
-const URL_ACTIVATE = '/users/activate';
-const URL_EMAIL_EXISTS = '/users/email_exists';
+const URL_ACTIVATE = '/users/activate/';
+const URL_EMAIL_EXISTS = '/users/email_exists/';
 const URL_LOGIN = '/users/login';
 const URL_LOGOUT = '/users/logout';
 const URL_REFRESH_TOKEN = '/users/refresh_token';
@@ -269,7 +269,7 @@ describe(URL_SEND_ACTIVATION_CODE, () => {
 
 describe(URL_ACTIVATE, () => {
   it('should activate user with valid activation code', (done) => {
-    const ACTIVATION_CODE = `/${seed_activations[0].code}`;
+    const ACTIVATION_CODE = seed_activations[0].code;
 
     request(app)
       .get(URL_API + URL_ACTIVATE + ACTIVATION_CODE)
@@ -292,7 +292,7 @@ describe(URL_ACTIVATE, () => {
   });
 
   it('should not activate user with expired activation code', (done) => {
-    const ACTIVATION_CODE = `/${seed_activations[1].code}`;
+    const ACTIVATION_CODE = seed_activations[1].code;
 
     request(app)
       .get(URL_API + URL_ACTIVATE + ACTIVATION_CODE)
@@ -304,7 +304,7 @@ describe(URL_ACTIVATE, () => {
   });
 
   it('should not activate user with invalid activation code', (done) => {
-    const ACTIVATION_CODE = '/oppagangnamstyle';
+    const ACTIVATION_CODE = 'oppagangnamstyle';
 
     request(app)
       .get(URL_API + URL_ACTIVATE + ACTIVATION_CODE)
@@ -318,7 +318,7 @@ describe(URL_ACTIVATE, () => {
 
 describe(URL_EMAIL_EXISTS, () => {
   it('should return true if provided email exists in database', (done) => {
-    const EMAIL = `/${seed_users[0].email}`;
+    const EMAIL = seed_users[0].email;
 
     request(app)
       .get(URL_API + URL_EMAIL_EXISTS + EMAIL)
@@ -330,7 +330,7 @@ describe(URL_EMAIL_EXISTS, () => {
   });
 
   it('should return false if provided email does not exist in database', (done) => {
-    const EMAIL = '/something@gmail.com';
+    const EMAIL = 'somethingstupid@gmail.com';
 
     request(app)
       .get(URL_API + URL_EMAIL_EXISTS + EMAIL)
