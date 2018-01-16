@@ -98,6 +98,13 @@ app.get('/activate/:code', async (req, res) => {
   return res.status(400).send({ error: 'Invalid activation code' });
 });
 
+app.get('/email_exists/:email', async (req, res) => {
+  const email = req.params.email.toLowerCase();
+
+  const user = await User.findOne({ email });
+  return res.status(200).send({ exists: user !== null });
+});
+
 app.post('/login', [
   check('email')
     .trim()

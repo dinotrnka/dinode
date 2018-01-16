@@ -18,6 +18,7 @@ const URL_API = '/api/v1';
 const URL_USERS = '/users';
 const URL_SEND_ACTIVATION_CODE = '/users/send_activation_code';
 const URL_ACTIVATE = '/users/activate';
+const URL_EMAIL_EXISTS = '/users/email_exists';
 const URL_LOGIN = '/users/login';
 const URL_LOGOUT = '/users/logout';
 const URL_REFRESH_TOKEN = '/users/refresh_token';
@@ -315,26 +316,29 @@ describe(URL_ACTIVATE, () => {
   });
 });
 
-describe(URL_LOGOUT, () => {
-  it('should remove access token on logout', (done) => {
+describe(URL_EMAIL_EXISTS, () => {
+  it('should return true if provided email exists in database', (done) => {
+    const EMAIL = `/${seed_users[0].email}`;
+
     request(app)
-      .post(URL_API + URL_LOGOUT)
-      .set('access_token', seed_users[0].tokens[0].token)
+      .get(URL_API + URL_EMAIL_EXISTS + EMAIL)
       .expect(200)
       .expect((res) => {
-        expect(res.body.success).toBe('Logged out');
+        expect(res.body.exists).toBeTruthy();
       })
-      .end(async (err) => {
-        if (err) return done(err);
+      .end(done);
+  });
 
-        try {
-          const user = await User.findById(seed_users[0]._id);
-          expect(user.tokens.length).toBe(1); // Refresh token remains active
-          done();
-        } catch (e) {
-          done(e);
-        }
-      });
+  it('should return false if provided email does not exist in database', (done) => {
+    const EMAIL = '/something@gmail.com';
+
+    request(app)
+      .get(URL_API + URL_EMAIL_EXISTS + EMAIL)
+      .expect(200)
+      .expect((res) => {
+        expect(res.body.exists).toBeFalsy();
+      })
+      .end(done);
   });
 });
 
@@ -436,6 +440,29 @@ describe(URL_LOGIN, () => {
         expect(res.body.error).toBe('Invalid credentials');
       })
       .end(done);
+  });
+});
+
+describe(URL_LOGOUT, () => {
+  it('should remove access token on logout', (done) => {
+    request(app)
+      .post(URL_API + URL_LOGOUT)
+      .set('access_token', seed_users[0].tokens[0].token)
+      .expect(200)
+      .expect((res) => {
+        expect(res.body.success).toBe('Logged out');
+      })
+      .end(async (err) => {
+        if (err) return done(err);
+
+        try {
+          const user = await User.findById(seed_users[0]._id);
+          expect(user.tokens.length).toBe(1); // Refresh token remains active
+          done();
+        } catch (e) {
+          done(e);
+        }
+      });
   });
 });
 
