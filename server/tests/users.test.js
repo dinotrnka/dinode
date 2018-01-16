@@ -36,7 +36,11 @@ describe(URL_USERS, () => {
       .send({ email, password })
       .expect(200)
       .expect((res) => {
-        expect(res.body.success).toBe('Registration successful');
+        if (process.env.EMAIL_ACTIVATION === 'on') {
+          expect(res.body.success).toBe('Registration successful, activation email sent');
+        } else {
+          expect(res.body.success).toBe('Registration successful');
+        }
       })
       .end(async (err) => {
         if (err) return done(err);
@@ -47,7 +51,11 @@ describe(URL_USERS, () => {
           expect(users[0].email).toBe(email);
 
           const activations = await Activation.find({ _owner: users[0]._id });
-          expect(activations.length).toBe(1);
+          if (process.env.EMAIL_ACTIVATION === 'on') {
+            expect(activations.length).toBe(1);
+          } else {
+            expect(activations.length).toBe(0);
+          }
 
           done();
         } catch (e) {

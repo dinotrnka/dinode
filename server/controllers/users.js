@@ -38,9 +38,11 @@ app.post('/', [
     });
     await user.save();
 
-    // Registration automatically triggers sending first activation code
-    const activation = await new Activation({ _owner: user._id }).save();
-    activation.sendEmail(); // Not waiting, email is sent asynchronously
+    if (process.env.EMAIL_ACTIVATION === 'on') {
+      const activation = await new Activation({ _owner: user._id }).save();
+      activation.sendEmail(); // Not waiting, email is sent asynchronously
+      return res.send({ success: 'Registration successful, activation email sent' });
+    }
 
     res.send({ success: 'Registration successful' });
   } catch (e) {
