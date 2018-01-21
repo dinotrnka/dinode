@@ -18,7 +18,6 @@ const URL_API = '/api/v1';
 const URL_REGISTER = '/users/register';
 const URL_SEND_ACTIVATION_CODE = '/users/send_activation_code';
 const URL_ACTIVATE = '/users/activate/';
-const URL_REGISTER_FACEBOOK = '/users/register_facebook';
 const URL_EMAIL_EXISTS = '/users/email_exists/';
 const URL_LOGIN = '/users/login';
 const URL_LOGOUT = '/users/logout';

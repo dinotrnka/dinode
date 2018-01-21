@@ -1,13 +1,11 @@
 const mongoose = require('mongoose');
 
-const { User } = require('./user');
-
 const FacebookSchema = new mongoose.Schema({
   _owner: {
     type: mongoose.Schema.Types.ObjectId,
     required: true,
   },
-  token: {
+  _facebook_id: {
     type: String,
     required: true,
   },

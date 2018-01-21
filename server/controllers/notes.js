@@ -23,9 +23,9 @@ app.post('/', authenticate, [
     });
 
     await note.save();
-    res.send(body);
+    return res.send(body);
   } catch (e) {
-    res.status(400).send({ error: 'Error while creating note' });
+    return res.status(400).send({ error: 'Error while creating note' });
   }
 });
 

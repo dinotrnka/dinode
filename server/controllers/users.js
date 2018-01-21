@@ -6,6 +6,7 @@ const axios = require('axios');
 
 const { User } = require('../models/user');
 const { Activation } = require('../models/activation');
+const { Facebook } = require('../models/facebook');
 const { authenticate } = require('../middleware/authenticate');
 
 const app = express();
@@ -45,13 +46,13 @@ app.post('/register', [
       return res.send({ success: 'Registration successful, activation email sent' });
     }
 
-    res.send({ success: 'Registration successful' });
+    return res.send({ success: 'Registration successful' });
   } catch (e) {
-    res.status(400).send({ error: 'Error while creating user' });
+    return res.status(400).send({ error: 'Error while creating user' });
   }
 });
 
-app.post('/facebook_login', [
+app.post('/facebook_connect', [
   check('token').exists().withMessage('Facebook token is required'),
 ], async (req, res) => {
   try {
@@ -60,21 +61,42 @@ app.post('/facebook_login', [
       return res.status(400).send({ error: errors.array()[0].msg });
     }
 
-    const body = _.pick(req.body, ['token']);
     const response = await axios.get('https://graph.facebook.com/v2.11/me', {
-      params: {
-        fields: 'email',
-        access_token: body.token,
-      },
+      params: { fields: 'email', access_token: req.body.token },
     });
 
-    res.send({ success: response.data });
+    const facebook_id = response.data.id;
+    const facebook_email = response.data.email;
+    if (!facebook_email) {
+      return res.status(400).send({ error: 'Facebook email is not provided' });
+    }
+
+    let facebook = await Facebook.findOne({ _facebook_id: response.data.id });
+    if (!facebook) {
+      // User with this Facebook ID doesn't exist, register him first
+      if (await User.findOne({ email: facebook_email })) {
+        return res.status(400).send({ error: `User with email ${facebook_email} already exists` });
+      }
+
+      const user = await new User({ email: facebook_email }).save();
+      facebook = await new Facebook({
+        _owner: user._id,
+        _facebook_id: facebook_id,
+      }).save();
+    }
+
+    // Facebook login
+    const user = await User.findById(facebook._owner);
+    const access_token = await user.generateToken('access');
+    const refresh_token = await user.generateToken('refresh');
+    const decoded = jwt.verify(access_token, process.env.JWT_SECRET);
+
+    return res.send({ access_token, refresh_token, expires: decoded.exp });
   } catch (e) {
     if (e.response) { // This means Facebook has useful response data about the error
       return res.status(400).send({ error: e.response.data.error.message });
     }
-
-    res.status(400).send({ error: 'Error while attempting Facebook login' });
+    return res.status(400).send({ error: 'Error while attempting Facebook login' });
   }
 });
 
@@ -107,7 +129,7 @@ app.post('/send_activation_code', [
   const new_activation = await new Activation({ _owner: user._id }).save();
   new_activation.sendEmail(); // Not waiting, email is sent asynchronously
 
-  res.send({ success: `Activation code sent to ${email}` });
+  return res.send({ success: `Activation code sent to ${email}` });
 });
 
 app.get('/activate/:code', async (req, res) => {
@@ -157,10 +179,9 @@ app.post('/login', [
 
     const access_token = await user.generateToken('access');
     const refresh_token = await user.generateToken('refresh');
-
     const decoded = jwt.verify(access_token, process.env.JWT_SECRET);
 
-    res.send({ access_token, refresh_token, expires: decoded.exp });
+    return res.send({ access_token, refresh_token, expires: decoded.exp });
   } catch (e) {
     res.status(400).send({ error: 'Invalid credentials' });
   }
@@ -191,9 +212,9 @@ app.post('/refresh_token', [
 
     const decoded = jwt.verify(access_token, process.env.JWT_SECRET);
 
-    res.send({ access_token, refresh_token, expires: decoded.exp });
+    return res.send({ access_token, refresh_token, expires: decoded.exp });
   } catch (e) {
-    res.status(400).send({ error: 'Invalid refresh token' });
+    return res.status(400).send({ error: 'Invalid refresh token' });
   }
 });
 
@@ -217,21 +238,21 @@ app.post('/change_password', authenticate, [
       req.user.password = body.new_password;
       await req.user.save();
       await req.user.removeAllTokens();
-      res.status(200).send({ success: 'Password successfully changed' });
-    } else {
-      res.status(400).send({ error: 'Incorrect old password' });
+      return res.status(200).send({ success: 'Password successfully changed' });
     }
+
+    return res.status(400).send({ error: 'Incorrect old password' });
   } catch (e) {
-    res.status(400).send({ error: 'Error while changing password' });
+    return res.status(400).send({ error: 'Error while changing password' });
   }
 });
 
 app.post('/logout', authenticate, async (req, res) => {
   try {
     await req.user.removeToken('access', req.token);
-    res.status(200).send({ success: 'Logged out' });
+    return res.status(200).send({ success: 'Logged out' });
   } catch (e) {
-    res.status(400).send({ error: 'Error while logging out' });
+    return res.status(400).send({ error: 'Error while logging out' });
   }
 });
 
