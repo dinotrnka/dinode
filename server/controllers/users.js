@@ -2,6 +2,7 @@ const express = require('express');
 const _ = require('lodash'); // eslint-disable-line more-naming-conventions/snake-case-variables
 const jwt = require('jsonwebtoken');
 const { check, validationResult } = require('express-validator/check');
+const axios = require('axios');
 
 const { User } = require('../models/user');
 const { Activation } = require('../models/activation');
@@ -9,11 +10,11 @@ const { authenticate } = require('../middleware/authenticate');
 
 const app = express();
 
-app.post('/', [
+app.post('/register', [
   check('email')
     .trim()
     .exists().withMessage('Email is required')
-    .isEmail().withMessage('Enter a valid email address')
+    .isEmail().withMessage('Email address is not valid')
     .custom(email => User.findOne({ email: email.toLowerCase() }).then((user) => {
       if (user) {
         throw new Error(`User with email ${email} already exists`);
@@ -50,11 +51,38 @@ app.post('/', [
   }
 });
 
+app.post('/facebook_login', [
+  check('token').exists().withMessage('Facebook token is required'),
+], async (req, res) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).send({ error: errors.array()[0].msg });
+    }
+
+    const body = _.pick(req.body, ['token']);
+    const response = await axios.get('https://graph.facebook.com/v2.11/me', {
+      params: {
+        fields: 'email',
+        access_token: body.token,
+      },
+    });
+
+    res.send({ success: response.data });
+  } catch (e) {
+    if (e.response) { // This means Facebook has useful response data about the error
+      return res.status(400).send({ error: e.response.data.error.message });
+    }
+
+    res.status(400).send({ error: 'Error while attempting Facebook login' });
+  }
+});
+
 app.post('/send_activation_code', [
   check('email')
     .trim()
     .exists().withMessage('Email is required')
-    .isEmail().withMessage('Enter a valid email address')
+    .isEmail().withMessage('Email address is not valid')
     .custom(email => User.findOne({ email: email.toLowerCase() }).then((user) => {
       if (!user) {
         throw new Error(`User with email ${email} does not exist`);

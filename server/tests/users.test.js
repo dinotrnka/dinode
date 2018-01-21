@@ -15,9 +15,10 @@ const {
 } = require('./seed/activations');
 
 const URL_API = '/api/v1';
-const URL_USERS = '/users';
+const URL_REGISTER = '/users/register';
 const URL_SEND_ACTIVATION_CODE = '/users/send_activation_code';
 const URL_ACTIVATE = '/users/activate/';
+const URL_REGISTER_FACEBOOK = '/users/register_facebook';
 const URL_EMAIL_EXISTS = '/users/email_exists/';
 const URL_LOGIN = '/users/login';
 const URL_LOGOUT = '/users/logout';
@@ -27,13 +28,13 @@ const URL_CHANGE_PASSWORD = '/users/change_password';
 beforeEach(populateUsers);
 beforeEach(populateActivations);
 
-describe(URL_USERS, () => {
+describe(URL_REGISTER, () => {
   it('should create a user with valid email and password and create activation key', (done) => {
     const email = 'testuser@gmail.com';
     const password = 'password';
 
     request(app)
-      .post(URL_API + URL_USERS)
+      .post(URL_API + URL_REGISTER)
       .send({ email, password })
       .expect(200)
       .expect((res) => {
@@ -70,7 +71,7 @@ describe(URL_USERS, () => {
     const password = 'password';
 
     request(app)
-      .post(URL_API + URL_USERS)
+      .post(URL_API + URL_REGISTER)
       .send({ email, password })
       .expect(200)
       .end(async (err) => {
@@ -91,7 +92,7 @@ describe(URL_USERS, () => {
     const password = 'password';
 
     request(app)
-      .post(URL_API + URL_USERS)
+      .post(URL_API + URL_REGISTER)
       .send({ email, password })
       .expect(200)
       .end(async (err) => {
@@ -111,7 +112,7 @@ describe(URL_USERS, () => {
     const password = 'password';
 
     request(app)
-      .post(URL_API + URL_USERS)
+      .post(URL_API + URL_REGISTER)
       .send({ password })
       .expect(400)
       .expect((res) => {
@@ -134,7 +135,7 @@ describe(URL_USERS, () => {
     const email = 'email@gmail.com';
 
     request(app)
-      .post(URL_API + URL_USERS)
+      .post(URL_API + URL_REGISTER)
       .send({ email })
       .expect(400)
       .expect((res) => {
@@ -158,11 +159,11 @@ describe(URL_USERS, () => {
     const password = 'somepass';
 
     request(app)
-      .post(URL_API + URL_USERS)
+      .post(URL_API + URL_REGISTER)
       .send({ email, password })
       .expect(400)
       .expect((res) => {
-        expect(res.body.error).toBe('Enter a valid email address');
+        expect(res.body.error).toBe('Email address is not valid');
       })
       .end(async (err) => {
         if (err) return done(err);
@@ -182,7 +183,7 @@ describe(URL_USERS, () => {
     const password = 'somepass';
 
     request(app)
-      .post(URL_API + URL_USERS)
+      .post(URL_API + URL_REGISTER)
       .send({ email, password })
       .expect(400)
       .expect((res) => {
@@ -206,7 +207,7 @@ describe(URL_USERS, () => {
     const password = 'wtf';
 
     request(app)
-      .post(URL_API + URL_USERS)
+      .post(URL_API + URL_REGISTER)
       .send({ email, password })
       .expect(400)
       .expect((res) => {
