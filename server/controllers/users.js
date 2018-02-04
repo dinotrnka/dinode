@@ -7,6 +7,7 @@ const axios = require('axios');
 const { User } = require('../models/user');
 const { Activation } = require('../models/activation');
 const { Facebook } = require('../models/facebook');
+const { Google } = require('../models/google');
 const { authenticate } = require('../middleware/authenticate');
 
 const app = express();
@@ -96,7 +97,55 @@ app.post('/facebook_connect', [
     if (e.response) { // This means Facebook has useful response data about the error
       return res.status(400).send({ error: e.response.data.error.message });
     }
-    return res.status(400).send({ error: 'Error while attempting Facebook login' });
+    return res.status(400).send({ error: 'Error while attempting Facebook connect' });
+  }
+});
+
+app.post('/google_connect', [
+  check('token').exists().withMessage('Google token is required'),
+], async (req, res) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).send({ error: errors.array()[0].msg });
+    }
+
+    const response = await axios.get('https://www.googleapis.com/userinfo/v2/me', {
+      headers: { Authorization: `Bearer ${req.body.token}` },
+    });
+
+    const google_id = response.data.id;
+    const google_email = response.data.email;
+    if (!google_email) {
+      return res.status(400).send({ error: 'Google email is not provided' });
+    }
+
+    let google = await Google.findOne({ _google_id: response.data.id });
+    if (!google) {
+      // User with this Google ID doesn't exist, register him first
+      if (await User.findOne({ email: google_email })) {
+        return res.status(400).send({ error: `User with email ${google_email} already exists` });
+      }
+
+      const user = await new User({ email: google_email }).save();
+      google = await new Google({
+        _owner: user._id,
+        _google_id: google_id,
+      }).save();
+    }
+
+    // Google login
+    const user = await User.findById(google._owner);
+    const access_token = await user.generateToken('access');
+    const refresh_token = await user.generateToken('refresh');
+    const decoded = jwt.verify(access_token, process.env.JWT_SECRET);
+
+    return res.send({ access_token, refresh_token, expires: decoded.exp });
+  } catch (e) {
+    if (e.response) { // This means Google has useful response data about the error
+      return res.status(400).send({ error: e.response.data.error.message });
+    }
+    return res.status(400).send({ error: 'Error while attempting Google connect' });
   }
 });
 
